@@ -2,63 +2,93 @@
 # _*_ coding:utf-8 _*_
 import os
 from collections import deque
-
+from base import setting
+import configparser
 import cv2
 import time
 import numpy as np
 import mediapipe as mp
 from utils.Thread import MyThreadFunc
-from base import setting
+import random
+
+import onnxruntime as ort
 
 
 class DetectFaceAndLip:
     # 唇动检测
-    def __init__(self, funasr_event):
+    def __init__(self, funasr_event, camera_index=1):
         self.funasr_event = funasr_event
-        # 设定说话检测的频率    padding =10  desired_size 216 padding=10 desired_size=300
+        # 设定说话检测的频率
         self.fps = 25
-        self.padding = 25
+        self.padding = int(self.get_config_value("padding_size", "padding"))
         # 判断嘴唇开合阈值
-        self.lip_open_threshold = 10  # 1. 0 17  阈值20; 2.avg 10
+        self.lip_open_threshold = float(
+            self.get_config_value("lip_open", "lip_open_threshold")
+        )
         self.mouth_status_history = []  # 用于存储嘴唇状态的历史记录
         self.remark = "Not talking"
+
+        # self._open = bool(self.get_config_value("update_open", "open"))
         self.face_count = 0  # 用于保存文件的计数
-        self.desired_size = 300  # 计算lip输入框大小
+
+        self.desired_size = int(self.get_config_value("resized_images", "desired_size"))
         self.face_detection = mp.solutions.face_detection.FaceDetection(
-            model_selection=1, min_detection_confidence=0.5
+            model_selection=0, min_detection_confidence=0.5
         )  # 人脸检测
         self.face_mesh = mp.solutions.face_mesh.FaceMesh(
-            max_num_faces=2, min_detection_confidence=0.6, min_tracking_confidence=0.6
+            static_image_mode=False,
+            refine_landmarks=True,
+            max_num_faces=1,
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5,
         )  # 初始化面部网格检测器
-        self.face_bbox_history = deque(maxlen=5)  # 帧平均
+        # 手部检测模型用来判断是否遮挡
+        # self.hands = mp.solutions.hands.Hands(
+        #     static_image_mode=False,
+        #     max_num_hands=2,
+        #     min_detection_confidence=0.7,
+        #     min_tracking_confidence=0.7,
+        # )
         # 目标人脸的边界框
         self.target_face_bbox = None
+        self.gamma = float(self.get_config_value("image_enhance", "gamma"))
+        inv_gamma = 1.0 / self.gamma
+        self.gamma_table = np.array(
+            [(i / 255.0) ** inv_gamma * 255 for i in np.arange(256)]
+        ).astype("uint8")
+        # 摄像头
+        self.camera_index = camera_index  # 新增摄像头索引配置
+        self.cap = cv2.VideoCapture(self.camera_index)
+        if not self.cap.isOpened():
+            raise ValueError(f"无法打开摄像头（索引：{self.camera_index}）。")
+        # 获取实际的FPS
+        self.fps = self.cap.get(cv2.CAP_PROP_FPS)
+        if self.fps == 0:
+            self.fps = 25
+        self.session = ort.InferenceSession(str(setting.model_path))
+        self.input_name = self.session.get_inputs()[0].name
+        self.output_name = self.session.get_outputs()[0].name
+        self.d_normalized_history = deque(maxlen=25)
         MyThreadFunc(func=self.check_talking, args=[]).start()
 
-    def detect_face_and_mouth(self):
+    def  detect_face_and_mouth(self):
         prev_mouth_status = None  # 记录上一帧的嘴唇状态
-        # 调用封装好的函数来选择摄像头
-        # cap, camera_index = self.select_working_camera()
-        # if cap is None:
-        #     print("未找到可用的摄像头。")
-        #     return
-        # print(f"使用摄像头索引 {camera_index} 进行检测。")
-        cap = cv2.VideoCapture(0)
+        cap = self.cap
         width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
         height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-        print(f"实际分辨率: {int(width)}x{int(height)}", self.fps)
-        self.fps = cap.get(cv2.CAP_PROP_FPS)
-        # print(self.fps)
+        print(f"实际分辨率: {int(width)}x{int(height)}, FPS: {self.fps}")
         while True:
             ret, frame = cap.read()
             if not ret:
                 break
             frame = cv2.flip(frame, 1)
             frame_height, frame_width, _ = frame.shape
-            # 进行人脸检测和跟踪
+
+            # 进行人脸检测
             frame, self.target_face_bbox = self.__handle_face_tracking_with_mediapipe(
                 frame, self.target_face_bbox
             )
+
             if self.target_face_bbox:
                 x_min, y_min, width, height = self.target_face_bbox
                 x_min = max(0, x_min)
@@ -67,15 +97,12 @@ class DetectFaceAndLip:
                 y_max = min(frame_height, y_min + height)
 
                 # 提取目标人脸区域
-                face_roi = frame[y_min:y_max, x_min:x_max]
-                # cv2.imshow("origin", face_roi)
-                or_h, or_w = face_roi.shape[:2]
+                # face_roi = frame[y_min:y_max, x_min:x_max]
                 # 添加Padding，扩大人脸区域
                 x_min_padded = max(0, x_min - self.padding)
                 y_min_padded = max(0, y_min - self.padding)
                 x_max_padded = min(frame_width, x_max + self.padding)
                 y_max_padded = min(frame_height, y_max + self.padding)
-
                 # 裁剪并添加Padding的face_roi_padded
                 face_roi_padded = frame[
                     y_min_padded:y_max_padded, x_min_padded:x_max_padded
@@ -91,78 +118,127 @@ class DetectFaceAndLip:
                 scale_h = self.desired_size / h
                 new_w = int(w * scale_w)
                 new_h = int(h * scale_h)
+
                 resized_face = cv2.resize(face_roi_padded, (new_w, new_h))
+                # resized_face = self.enhance_image(resized_face)
                 # cv2.imshow("change", resized_face)
-                # resized_face=self.enhance_image(resized_face)
-                # 保存人脸到本地
-                # self.save_face(face_roi)
-                # self.save_face(resized_face)
                 # 在 resized_face 上绘制关键点用于保存和可视化
                 rgb_face = cv2.cvtColor(resized_face, cv2.COLOR_BGR2RGB)
                 output = self.face_mesh.process(rgb_face)
                 landmark_points = output.multi_face_landmarks
+
                 if landmark_points:
                     # 处理检测到的人脸关键点
                     selected_landmarks = landmark_points[0].landmark
-                    current_distance, distance_ = self.__calculate_lip_distance(
-                        selected_landmarks, self.desired_size
-                    )
-                    # print("current_distance",current_distance)
-                    self.face_count += 1
-                    _centered = self.__is_face_centered(
-                        selected_landmarks, self.desired_size
-                    )
-                    current_mouth_status = self.update_mouth_status(
-                        _centered, current_distance, distance_
-                    )
-                    prev_mouth_status = current_mouth_status
-                    # 绘制目标人脸边界框可视化
-                # cv2.rectangle(frame, (x_min, y_min), (x_min + width, y_min + height), (0, 255, 0), 1)
-                rgb_face = cv2.cvtColor(face_roi, cv2.COLOR_BGR2RGB)
-                output = self.face_mesh.process(rgb_face)
-                landmark_points1 = output.multi_face_landmarks
+                    # 判断手是否遮挡人脸
+                    # face_occluded = self.is_hand_covering_face_simple(resized_face)
+                    selected_landmarks = landmark_points[0].landmark
+                    if self.__is_face_centered(selected_landmarks, new_w):
+                        # 说明是正脸
+                        # print(1)
+                        current_distance, distance_13 = self.__calculate_lip_distance(
+                            selected_landmarks
+                        )
+                        # self.face_count += 1
+                        self.update_mouth_status(
+                            current_distance, distance_13
+                        )
+                    else:
+                        # print(0)  卡主
+                        pass
 
-                if landmark_points1:
-                    # 只处理目标人脸的关键点
-                    selected_landmarks1 = landmark_points1[0].landmark
+
                     face_points = []
-                    # 绘制特征点，需要映射回原始帧坐标
-                    for landmark in selected_landmarks1:
-                        x_on_face = int(landmark.x * or_w)
-                        y_on_face = int(landmark.y * or_h)
-                        x_on_frame = x_min + x_on_face
-                        y_on_frame = y_min + y_on_face
-                        face_points.append((x_on_frame, y_on_frame))
-                        # cv2.circle(frame, (x_on_frame, y_on_frame), 1, (0, 255, 0), -1)
-                    # 绘制浅蓝色
+                    for landmark in selected_landmarks:
+                        # landmark.x, landmark.y 范围在 [0,1]
+                        # 转换为resized_face坐标
+                        x_resized = landmark.x * new_w
+                        y_resized = landmark.y * new_h
+
+                        # 映射回 face_roi_padded 原始坐标
+                        x_padded = x_resized / scale_w
+                        y_padded = y_resized / scale_h
+
+                        # 映射回 frame 全局坐标
+                        x_frame_coord = int(x_min_padded + x_padded)
+                        y_frame_coord = int(y_min_padded + y_padded)
+
+                        face_points.append((x_frame_coord, y_frame_coord))
+
+                    # 绘制浅蓝色mesh结构
                     for connection in mp.solutions.face_mesh.FACEMESH_TESSELATION:
                         pt1 = face_points[connection[0]]
                         pt2 = face_points[connection[1]]
                         cv2.line(frame, pt1, pt2, (255, 255, 0), 1)
-                    # 绘制嘴巴红色
+
+                    # 绘制嘴唇红色
                     for connection in mp.solutions.face_mesh.FACEMESH_LIPS:
                         pt1 = face_points[connection[0]]
                         pt2 = face_points[connection[1]]
                         cv2.line(frame, pt1, pt2, (0, 0, 255), 1)
+
+                    cv2.putText(
+                        frame,
+                        self.remark,
+                        (30, 30),
+                        cv2.FONT_HERSHEY_DUPLEX,
+                        1,
+                        (
+                            (0, 0, 255) if "Please" in self.remark else (125, 246, 55)
+                        ),  # 提示信息为红色，正常信息为绿色
+                        1,
+                    )
+                else:
+                    # 人脸点不存在
+                    self.d_normalized_history.clear()
+                    self.mouth_status_history.clear()
+                    self.remark = "No Fac"
+                    cv2.putText(
+                        frame,
+                        self.remark,
+                        (30, 30),
+                        cv2.FONT_HERSHEY_DUPLEX,
+                        1,
+                        (0, 0, 255),  # 红色
+                        1,
+                    )
+            else:
+                # 没有检测到人脸时的处理
+                self.remark = "No Face Detected"
+                self.d_normalized_history.clear()
+                self.mouth_status_history.clear()
                 cv2.putText(
                     frame,
                     self.remark,
                     (30, 30),
                     cv2.FONT_HERSHEY_DUPLEX,
                     1,
-                    (
-                        (0, 0, 255) if "Please" in self.remark else (125, 246, 55)
-                    ),  # 提示信息为红色，正常信息为绿色
+                    (0, 0, 255),  # 红色
                     1,
                 )
-
-            else:
-                self.remark = "No Face Detected"
             cv2.imshow("Video", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
         cap.release()
         cv2.destroyAllWindows()
+
+    def min_max_scale(self, data):
+        # MinMaxScaler
+        # print(data)
+        data = np.array(data)
+        min_val = np.min(data)
+        max_val = np.max(data)
+        # 避免除以零
+        if max_val - min_val == 0:
+            return data
+        scaled_data = (data - min_val) / (max_val - min_val)
+        return scaled_data
+
+    @staticmethod
+    def get_config_value(group, key):
+        con = configparser.ConfigParser()
+        con.read(setting.CONFIG_DIR, encoding="utf-8")
+        return con.get(group, key)
 
     # 可用摄像头列表
     def get_available_cameras(self, max_index=3):
@@ -213,12 +289,22 @@ class DetectFaceAndLip:
         return None, None
 
     def __handle_face_tracking_with_mediapipe(
-        self, frame, target_face_bbox, distance_threshold=100
+        self, frame, target_face_bbox, distance_threshold=70
     ):
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_height, frame_width, _ = frame.shape
         # 使用 MediaPipe 进行人脸检测
         results = self.face_detection.process(rgb_frame)
+        # 如果检测到人脸，输出每个检测到的脸部边界框和置信度
+        # if results.detections:
+        #     for detection in results.detections:
+        #         # 获取边界框信息
+        #         bboxC = detection.location_data.relative_bounding_box
+        #         print(
+        #             f"Bounding Box - x: {bboxC.xmin}, y: {bboxC.ymin}, width: {bboxC.width}, height: {bboxC.height}"
+        #         )
+        #         # 获取检测置信度
+        #         print(f"Detection confidence: {detection.score[0]}")
         if results.detections:
             candidate_faces = []
             for detection in results.detections:
@@ -251,16 +337,7 @@ class DetectFaceAndLip:
                         closest_face = face
                 # 更新目标人脸边界框
                 if closest_face:
-                    self.face_bbox_history.append(closest_face)
-                    # 计算移动平均
-                    avg_bbox = (
-                        int(np.mean([bbox[0] for bbox in self.face_bbox_history])),
-                        int(np.mean([bbox[1] for bbox in self.face_bbox_history])),
-                        int(np.mean([bbox[2] for bbox in self.face_bbox_history])),
-                        int(np.mean([bbox[3] for bbox in self.face_bbox_history])),
-                    )
-                    target_face_bbox = avg_bbox
-                    # print("closest_face:", target_face_bbox)
+                    target_face_bbox = closest_face
                     # 检查人脸是否接近图像边缘
                     if self.__is_face_near_edge(
                         target_face_bbox, frame_width, frame_height
@@ -272,15 +349,6 @@ class DetectFaceAndLip:
             else:
                 # 如果未锁定目标人脸，选择面积最大的人脸
                 target_face_bbox = max(candidate_faces, key=lambda x: x[2] * x[3])
-                self.face_bbox_history.append(target_face_bbox)
-                # 计算移动平均
-                avg_bbox = (
-                    int(np.mean([bbox[0] for bbox in self.face_bbox_history])),
-                    int(np.mean([bbox[1] for bbox in self.face_bbox_history])),
-                    int(np.mean([bbox[2] for bbox in self.face_bbox_history])),
-                    int(np.mean([bbox[3] for bbox in self.face_bbox_history])),
-                )
-                target_face_bbox = avg_bbox
                 # 检查新目标人脸是否接近边缘
                 if self.__is_face_near_edge(
                     target_face_bbox, frame_width, frame_height
@@ -293,7 +361,7 @@ class DetectFaceAndLip:
 
         return frame, target_face_bbox
 
-    def __calculate_lip_distance(self, selected_landmarks, desired_size):
+    def __calculate_lip_distance(self, selected_landmarks):
         # 计算调整后的嘴唇开合距离
         # 定义关键点内唇
         lip_landmark_pairs = [(13, 14), (81, 178), (82, 87), (312, 317), (311, 402)]
@@ -301,41 +369,41 @@ class DetectFaceAndLip:
         for upper_idx, lower_idx in lip_landmark_pairs:
             upper_point = np.array(
                 [
-                    selected_landmarks[upper_idx].x * desired_size,
-                    selected_landmarks[upper_idx].y * desired_size,
+                    selected_landmarks[upper_idx].x * self.desired_size,
+                    selected_landmarks[upper_idx].y * self.desired_size,
                 ]
             )
             lower_point = np.array(
                 [
-                    selected_landmarks[lower_idx].x * desired_size,
-                    selected_landmarks[lower_idx].y * desired_size,
+                    selected_landmarks[lower_idx].x * self.desired_size,
+                    selected_landmarks[lower_idx].y * self.desired_size,
                 ]
             )
-            # 计算垂直距离（y轴差值）
-            vertical_distance = abs(lower_point[1] - upper_point[1])
+
+            vertical_distance = np.linalg.norm(upper_point - lower_point)
             vertical_distances.append(vertical_distance)
-        # 计算所有垂直距离的平均值
+
         avg_vertical_distance = np.mean(vertical_distances)
-        # print("所有垂直距离的平均值",avg_vertical_distance*10)
-        # 计算关键点0和17之间的距离
+        # print("avg_vertical_distance", avg_vertical_distance * 10)
+        # # 计算关键点0和17之间的距离
         distance_upper_lip = abs(
-            selected_landmarks[0].y * desired_size
-            - selected_landmarks[17].y * desired_size
+            selected_landmarks[0].y * self.desired_size
+            - selected_landmarks[17].y * self.desired_size
         )
-        # 打印17和0的距离
-        # print("17 和 0 之间的嘴唇距离:", distance_upper_lip)
+        # # print("self.baseline_lip_threshold", self.baseline_lip_threshold)
         # 计算13和14之间的距离
+        point_13 = selected_landmarks[13]
+        point_14 = selected_landmarks[14]
+
         distance_13_14 = abs(
-            selected_landmarks[13].y * desired_size
-            - selected_landmarks[14].y * desired_size
+            point_13.y * self.desired_size - point_14.y * self.desired_size
         )
-        # print("distance_13_14",distance_13_14)
-        # print("13 和 14 之间的嘴唇距离:", distance_upper_lip)
+        # print("distance_13_14", distance_13_14)
         try:
             D_normalized = avg_vertical_distance * 100 / distance_upper_lip
         except ZeroDivisionError:
-            D_normalized = 0  # 处理除零错误
-        # print("D_normalized",D_normalized)
+            D_normalized = 0
+        # print("D_normalized", D_normalized)
         return D_normalized, distance_13_14
 
     @staticmethod
@@ -368,106 +436,79 @@ class DetectFaceAndLip:
             return True
         return False
 
-    def update_mouth_status(self, centered, current_distance, distance_):
-        # 只有当脸居中时才更新嘴唇状态
-        if centered:
-            distance_change = current_distance
-            if distance_ < 1:
+    def update_mouth_status(self, current_distance, distance_13):
+        # 将当前距离加入历史记录
+        self.d_normalized_history.append(current_distance)
+        # print(self.d_normalized_history)
+        if len(self.d_normalized_history) == 25:
+            # 将 deque 转为 NumPy 数组以进行归一化
+            # print(self.d_normalized_history)
+            normalized_history = self.min_max_scale(list(self.d_normalized_history))
+            # print(normalized_history)
+            input_array = np.array(normalized_history, dtype=np.float32).reshape(
+                1, 25, 1
+            )
+
+            # 使用模型预测嘴巴状态
+            y_pred = self.session.run(
+                [self.output_name], {self.input_name: input_array}
+            )
+            # print(y_pred[0])
+            predict = np.argmax(y_pred[0], axis=-1)
+            # print(predict)
+            if int(predict) == 1:  # "speaking"
+                detected = True
+            else:  # "silent"
                 detected = False
-            else:
-                detected = distance_change > self.lip_open_threshold
-            # 更新历史记录
-            self.mouth_status_history.append(detected)
-            return detected
         else:
-            # 如果脸不居中，返回上一状态
-            self.remark = "Please face the camera"  # 提示用户调整
-            if len(self.mouth_status_history) > 0:
-                return self.mouth_status_history[-1]
-            else:
-                return False
+            # 如果历史记录不足，使用当前距离判断
+            detected = distance_13 > self.lip_open_threshold
 
-    # def check_talking(self):
-    #     wait = 0.5
-    #     while True:
-    #         alternations = 0
-    #         is_talking = False
-    #         total_count = len(self.mouth_status_history)
-    #         # 遍历列表，计算张嘴闭嘴的频率
-    #         if total_count > wait * self.fps:
-    #             history = self.mouth_status_history.copy()
-    #             self.mouth_status_history.clear()
-    #             # 离散计算 计算闭嘴和张嘴的次数
-    #             for i in range(1, len(history)):
-    #                 if history[i] != history[i - 1]:
-    #                     alternations += 1
-    #             if alternations > 2:
-    #                 is_talking = True
-    #             else:
-    #                 # 通过概率计算 初始状态
-    #                 open_count = sum(history)
-    #                 open_ratio = open_count / len(history)
-    #                 is_talking = 0.1< open_ratio < 0.8
-    #             if is_talking:
-    #                 self.remark = "Talking"
-    #                 self.funasr_event.set()
-    #             else:
-    #                 self.remark = "Not talking"
-    #                 self.funasr_event.clear()
-    #
-    #         time.sleep(0.01)
-    # def check_talking(self):
-    #     wait = 0.4
-    #     while True:
-    #         total_count = len(self.mouth_status_history)
-    #         if total_count > wait * self.fps:
-    #             history = self.mouth_status_history.copy()
-    #             print("history:",history)
-    #             self.mouth_status_history.clear()
-    #             all_open = all(history)
-    #             all_closed = not any(history)
-    #             if all_open or all_closed:
-    #                 is_talking = False
-    #             else:
-    #                 is_talking = True
-    #             if is_talking:
-    #                 self.remark = "Talking"
-    #                 self.funasr_event.set()
-    #             else:
-    #                 self.remark = "Not talking"
-    #                 self.funasr_event.clear()
-    #         time.sleep(0.2)
+        # print(detected)
+        # 更新嘴巴状态历史记录
+        self.mouth_status_history.append(detected)
+        return detected
+
     def check_talking(self):
-        wait = 0.4  # 时间窗口
-        talking_threshold = 0.2  # 持续talking的时间
+        wait = 0.15  # 时间窗口（秒）
+        talking_threshold = 0
         talking_frames_required = int(talking_threshold * self.fps)
-        talking_frames_count = 0  # 连续talking的帧数计数
-
+        talking_frames_count = 0  # 连续 talking 的帧数计数
         while True:
+            time.sleep(wait)  # 窗口刷新频率
             total_count = len(self.mouth_status_history)
+
             if total_count > wait * self.fps:
+                # 复制历史记录并清空
                 history = self.mouth_status_history.copy()
-                # print("history:", history)
                 self.mouth_status_history.clear()
-                all_open = all(history)
-                all_closed = not any(history)
-                if all_open or all_closed:
-                    is_talking = False
-                    self.remark = "Not talking"
-                else:
+
+                # print("history", len(history))
+
+                # 统计 history 中 True 的数量
+                talking_count = sum(history)
+                talking_ratio = talking_count / len(history)  # 计算 True 的比例
+
+                if talking_ratio > 0.5:
                     is_talking = True
-                    self.remark = "Talking"
+                    self.remark = "lip moving"
+                else:  # 否则表示未说话
+                    is_talking = False
+                    self.remark = "lip closed"
+
+                # 根据 is_talking 状态更新事件和计数器
                 if is_talking:
                     talking_frames_count += 1
                     if talking_frames_count >= talking_frames_required:
-                        self.funasr_event.set()
+                        self.funasr_event.set()  # 触发事件
                 else:
                     talking_frames_count = 0
-                    self.funasr_event.clear()
-            time.sleep(0.1)  # 及时检查窗口数值
+                    self.funasr_event.clear()  # 清除事件
+
+
 
     @staticmethod
-    def __is_face_near_edge(bbox, frame_width, frame_height, edge_threshold=20):
+    def __is_face_near_edge(bbox, frame_width, frame_height, edge_threshold=0):
         x_min, y_min, width, height = bbox
         # 人脸是否接近图像边缘
         if (
@@ -492,13 +533,9 @@ class DetectFaceAndLip:
         )
         # 计算眼睛中心和嘴巴中心
         mouth_center = (mouth_left + mouth_right) / 2
-        # # 计算俯仰角（鼻尖到嘴巴中心的垂直偏移）
+        # 计算俯仰角（鼻尖到嘴巴中心的垂直偏移）
         delta_y_pitch = mouth_center[1] - nose_tip[1]
-        # print("delta_y_pitch", delta_y_pitch)  # 正脸 30-40 俯视 10- 20
         return delta_y_pitch
-
-    def alignment_face(self):
-        pass
 
     # 保存识别人脸
     def save_face(self, face_roi):
@@ -514,21 +551,62 @@ class DetectFaceAndLip:
         laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
         return laplacian_var > threshold
 
+    # def is_hand_covering_face(self, frame, selected_landmarks):
+    #     image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    #     hand_results = self.hands.process(image_rgb)
+    #
+    #     if not hand_results.multi_hand_landmarks:
+    #         return False
+    #
+    #     frame_height, frame_width, _ = frame.shape
+    #
+    #     # 获取手部 bounding box 列表
+    #     hand_bboxes = []
+    #     for hand_landmarks in hand_results.multi_hand_landmarks:
+    #         x_coords = [lm.x for lm in hand_landmarks.landmark]
+    #         y_coords = [lm.y for lm in hand_landmarks.landmark]
+    #         x_min = int(min(x_coords) * frame_width)
+    #         x_max = int(max(x_coords) * frame_width)
+    #         y_min = int(min(y_coords) * frame_height)
+    #         y_max = int(max(y_coords) * frame_height)
+    #         hand_bboxes.append((x_min, y_min, x_max, y_max))
+    #
+    #     # 获取嘴部关键点的全局坐标
+    #     mouth_indices = [13, 14]
+    #     mouth_points = [
+    #         (
+    #             int(selected_landmarks[idx].x * frame_width),
+    #             int(selected_landmarks[idx].y * frame_height),
+    #         )
+    #         for idx in mouth_indices
+    #     ]
+    #
+    #     # 检查嘴部关键点是否在任何一个手的bbox内
+    #     for fx, fy in mouth_points:
+    #         for x_min, y_min, x_max, y_max in hand_bboxes:
+    #             if x_min <= fx <= x_max and y_min <= fy <= y_max:
+    #                 return True
+    #     return False
+
+    # def is_hand_covering_face_simple(self, frame):
+    #     image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    #     hand_results = self.hands.process(image_rgb)
+    #
+    #     if hand_results.multi_hand_landmarks:
+    #         return True  # 检测到手，认为脸部遮挡
+    #     else:
+    #         return False  # 未检测到手，认为脸部未遮挡
+
     # 人脸增强
-    @staticmethod
-    def enhance_image(face_roi_padded):
-        cv2.imshow("original", face_roi_padded)
-        # 将图像从BGR转换到YCrCb颜色空间
+    def enhance_image(self, face_roi_padded):
+        # YCrCb 增强对比度
         ycrcb = cv2.cvtColor(face_roi_padded, cv2.COLOR_BGR2YCrCb)
-        # 分离Y(亮度)通道
         y, cr, cb = cv2.split(ycrcb)
-        # 创建CLAHE对象，参数可以根据需要调整
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(1, 1))
-        # 应用CLAHE到Y通道
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))  # 调整 tileGridSize
         y_eq = clahe.apply(y)
-        # 合并均衡化后的Y通道与原始的Cr和Cb通道
         ycrcb_eq = cv2.merge((y_eq, cr, cb))
-        # 将图像从YCrCb转换回BGR颜色空间
         face_roi_enhanced = cv2.cvtColor(ycrcb_eq, cv2.COLOR_YCrCb2BGR)
-        cv2.imshow("change", face_roi_enhanced)
+
+        # Gamma 校正，使用预计算的表
+        face_roi_enhanced = cv2.LUT(face_roi_enhanced, self.gamma_table)
         return face_roi_enhanced
