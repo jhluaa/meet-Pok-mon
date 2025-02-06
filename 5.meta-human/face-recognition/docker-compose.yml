@@ -1,0 +1,20 @@
+version: "3.6"
+
+services:
+  # API service
+  api:
+    image: swr.cn-southwest-2.myhuaweicloud.com/jack-liu/face-api:0.0.2
+    privileged: true
+    container_name: face-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    networks:
+      - custom-net
+    volumes:
+      - .:/app
+      - ./model:/root/.deepface/weights/
+networks:
+  custom-net:
+    external: true
