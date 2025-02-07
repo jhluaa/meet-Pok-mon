@@ -72,7 +72,9 @@ class configUtil:
 
 # 模拟 public.common.setting
 class setting:
-    TEMP_DIR = os.path.join(os.path.dirname(__file__), "temp")
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    # 生成音频文件保存目录：BASE_DIR/resources/temp
+    TEMP_DIR = os.path.join(BASE_DIR, "resources", "temp")
     # 确保目录存在
     if not os.path.exists(TEMP_DIR):
         os.makedirs(TEMP_DIR)
