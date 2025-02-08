@@ -8,8 +8,8 @@ from lxml import etree
 from pymongo import MongoClient
 
 # ================= 配置部分 ==================
-APP_KEY = '1204778417330212864'
-APP_SECRET = 'TwU0IYaT'
+APP_KEY = '1205511799882272768'
+APP_SECRET = 'tiiUhVfw'
 PROXY_API_URL = "https://api.xiaoxiangdaili.com/ip/get"
 MONGO_URI = "mongodb://localhost:27017/"
 MONGO_DB = "pokemon_database"          #数据库
@@ -19,8 +19,8 @@ IMAGE_SAVE_PATH = r'C:\Users\luke\Desktop\project\\'
 # 豆瓣搜索的 URL（图书、电影、音乐）
 SEARCH_URLS = {
     "book": "https://search.douban.com/book/subject_search?search_text=宝可梦&cat=1001",
-    "movie": "https://search.douban.com/movie/subject_search?search_text=宝可梦&cat=1002",
-    "music": "https://search.douban.com/music/subject_search?search_text=宝可梦&cat=1003",
+    # "movie": "https://search.douban.com/movie/subject_search?search_text=宝可梦&cat=1002",
+    # "music": "https://search.douban.com/music/subject_search?search_text=宝可梦&cat=1003",
 }
 
 # ================= 日志配置 ==================
@@ -41,6 +41,8 @@ class DoubanScraper:
             'Mozilla/5.0 (compatible; ABrowse 0.4; Syllable)',
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36'
         ]
+        self.headers = {}
+        self.proxies=''
         self.cookie = 'bid=c8OsiziavBU; ll="118165"; ap_v=0,6.0; loc-last-index-location-id="118165"; dbcl2="198033818:7f77Wuj7gq8"; ck=OW-m; frodotk_db="ca4a8c9a313b3ef45edfa5ce93b1bcdc"; push_noty_num=0; push_doumail_num=0'
 
     def get_proxy(self):
@@ -116,9 +118,12 @@ class DoubanScraper:
         使用 XPath 提取图书信息，返回包含字典的列表
         假设每个图书条目放在 <div class="result-item book"> 中
         """
-        book_nodes = html_tree.xpath('//div[contains(@class, "result-item") and contains(@class, "book")]')
+        data_url=[]
         items = []
-        for node in book_nodes:
+        book_nodes = html_tree.xpath('//*[@id="root"]/div/div[2]/div[1]/div[1]/div/div/a/@href') # 拿到url 列表
+        data_url.append(book_nodes)
+        for url  in data_url:
+            node=self.get_html_content(url, self.headers, self.proxies)
             item = {}
             title = node.xpath('.//h3[@class="title"]/text()')
             item['title'] = title[0].strip() if title else ""
@@ -131,6 +136,7 @@ class DoubanScraper:
             rating = node.xpath('.//span[@class="rating"]/text()')
             item['rating'] = rating[0].strip() if rating else ""
             items.append(item)
+            time.sleep(2)
         return items
 
     def parse_movies_xp(self, html_tree):
@@ -215,21 +221,32 @@ class DoubanScraper:
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
         for category, url in self.search_urls.items():
             logging.info(f"开始爬取豆瓣 {category} 数据，目标URL:{url}")
-            headers = self.get_random_headers()  # 获取随机请求头
-            proxies = self.get_ip()              # 获取代理 IP
-            html_content = self.get_html_content(url, headers, proxies)  # 获取网页内容
-            if html_content:
-                data_items = self.parse_douban_data(html_content, category)
-                # 将解析到的数据保存到MongoDB，并下载封面图片
-                for result in data_items:
-                    self.save_to_mongo(result)
-                    if result["cover"]:
-                        self.save_image(IMAGE_SAVE_PATH, result["title"], result["cover"],
-                                        self.get_random_headers(), self.get_ip())
-                logging.info(f"豆瓣 {category} 数据解析完成。")
-                time.sleep(10)  #避免i频繁被锁
-            else:
-                logging.error(f"获取豆瓣 {category} 数据失败，URL：{url}")
+            self.headers = self.get_random_headers()  # 获取随机请求头
+            self.proxies = self.get_ip()              # 获取代理 IP
+            if category == 'book':
+                root_urls = [f"{url}&start={i * 15}" for i in range(5)]  # 构造分页 URL
+                for root_url in root_urls:
+                    logging.info(f"爬取分页 URL: {root_url}")
+                    html_content = self.get_html_content(root_url, self.headers, self.proxies)  # 获取网页内容
+                    if html_content:
+                        data_items = self.parse_douban_data(html_content, category)  # 解析网页数据
+
+                        # 将解析到的数据保存到 MongoDB，并下载封面图片
+                        for result in data_items:
+                            self.save_to_mongo(result)  # 保存到 MongoDB
+                            if result.get("cover"):
+                                self.save_image(
+                                    IMAGE_SAVE_PATH,
+                                    result["title"],
+                                    result["cover"],
+                                    self.get_random_headers(),
+                                    self.get_ip()
+                                )
+                        logging.info(f"豆瓣 {category} 数据解析完成，分页 URL: {root_url}")
+                    else:
+                        logging.error(f"获取豆瓣 {category} 数据失败，分页 URL: {root_url}")
+
+                    time.sleep(10)  # 避免频繁请求被封禁
 
 if __name__ == '__main__':
     scraper = DoubanScraper()
