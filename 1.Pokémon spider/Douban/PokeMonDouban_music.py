@@ -99,7 +99,7 @@ class DoubanScraper:
 
 
 class BookDetailsScraper:
-    def __init__(self, input_file="urls.txt", output_csv="book_details.csv"):
+    def __init__(self, input_file="books.txt", output_csv="book_details.csv"):
         """
         初始化 BookDetailsScraper 类
         :param input_file: 存储图书链接的文件名
@@ -316,12 +316,12 @@ class BookDetailsScraper:
             logging.info(detail)
 
 if __name__ == "__main__":
-    # base_url = "https://search.douban.com/book/subject_search?search_text=宝可梦&cat=1001"
-    # scraper = DoubanScraper(base_url=base_url, max_pages=6)
-    # scraper.run()
-    # MongoDB 配置
-    MONGO_URI = "mongodb://localhost:27017/"
-    MONGO_DB = "pokemon_database"  # 数据库
-    MONGO_COLLECTION = "douban_pokemon"  # 集合名称
-    scraper = BookDetailsScraper(input_file="../urls.txt")
+    base_url = "https://search.douban.com/music/subject_search?search_text=宝可梦&cat=1003"
+    scraper = DoubanScraper(base_url=base_url, max_pages=2)
     scraper.run()
+    # MongoDB 配置
+    # MONGO_URI = "mongodb://localhost:27017/"
+    # MONGO_DB = "pokemon_database"  # 数据库
+    # MONGO_COLLECTION = "douban_pokemon_music"  # 集合名称
+    # scraper = BookDetailsScraper(input_file="urls.txt")
+    # scraper.run()

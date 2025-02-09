@@ -1,4 +1,3 @@
-# 是有代理ip 模拟浏览器行为爬取 检查无法拿到html的动态加载数据
 from playwright.sync_api import sync_playwright
 from lxml import etree
 import time
@@ -7,7 +6,7 @@ from pymongo import MongoClient
 import logging
 import  random
 import os
-IMAGE_SAVE_PATH='./'
+IMAGE_SAVE_PATH= '../'
 
 APP_KEY = '1205511799882272768'
 APP_SECRET = 'tiiUhVfw'
@@ -22,7 +21,7 @@ class DoubanScraper:
         """
         self.base_url = base_url
         self.max_pages = max_pages
-        self.all_urls = []  # 用于存储所有爬取到的图书链接
+        self.all_urls = []  # 用于存储所有爬取到的电影链接
         self.output_file = output_file
 
 
@@ -65,9 +64,9 @@ class DoubanScraper:
 
     def parse_urls(self, html_content):
         """
-        解析网页内容，提取图书链接
+        解析网页内容，提取电影链接
         :param html_content: 网页 HTML 内容
-        :return: 提取到的图书链接列表
+        :return: 提取到的电影链接列表
         """
         html_tree = etree.HTML(html_content)
         book_urls = html_tree.xpath('//*[@id="root"]//div/div/div/div[1]/a/@href')
@@ -75,14 +74,14 @@ class DoubanScraper:
         return unique_urls
 
     def save_urls_to_file(self):
-        """ 将所有图书链接保存到本地 txt 文件 """
+        """ 将所有电影链接保存到本地 txt 文件 """
         with open(self.output_file, "w", encoding="utf-8") as file:
             for url in self.all_urls:
                 file.write(url + "\n")
-        print(f"所有图书链接已保存到 {self.output_file}")
+        print(f"所有电影链接已保存到 {self.output_file}")
     def run(self):
         """
-        主流程，依次爬取分页 URL，提取并存储图书链接
+        主流程，依次爬取分页 URL，提取并存储电影链接
         """
         root_urls = self.get_root_urls()
         for url in root_urls:
@@ -90,24 +89,24 @@ class DoubanScraper:
             if html_content:
                 page_urls = self.parse_urls(html_content)
                 self.all_urls.extend(page_urls)
-                print(f"解析到 {len(page_urls)} 个图书链接。")
+                print(f"解析到 {len(page_urls)} 个电影链接。")
             time.sleep(5)  # 避免频繁请求被封禁
 
         # 去重并输出所有链接
         self.all_urls = list(set(self.all_urls))
-        print(f"共解析到 {len(self.all_urls)} 个唯一图书链接。")
+        print(f"共解析到 {len(self.all_urls)} 个唯一电影链接。")
         self.save_urls_to_file()
 
 
-class BookDetailsScraper:
-    def __init__(self, input_file="urls.txt", output_csv="book_details.csv"):
+class MovieDetailsScraper:
+    def __init__(self, input_file="urls.txt", output_csv="movie_details.csv"):
         """
         初始化 BookDetailsScraper 类
-        :param input_file: 存储图书链接的文件名
+        :param input_file: 存储电影链接的文件名
         """
         self.input_file = input_file
         self.book_urls = self.load_urls_from_file()
-        self.book_details = []  # 存储图书详细信息
+        self.book_details = []  # 存储电影详细信息
         self.output_csv = output_csv  # 保存到 CSV 的文件路径
         # 初始化 MongoDB 连接
         self.client = MongoClient(MONGO_URI)
@@ -130,18 +129,18 @@ class BookDetailsScraper:
             return None
 
     def load_urls_from_file(self):
-        """从本地 txt 文件中读取图书链接"""
+        """从本地 txt 文件中读取电影链接"""
         try:
             with open(self.input_file, "r", encoding="utf-8") as file:
                 urls = [line.strip() for line in file if line.strip()]
-            logging.info(f"从 {self.input_file} 读取到 {len(urls)} 个图书链接。")
+            logging.info(f"从 {self.input_file} 读取到 {len(urls)} 个电影链接。")
             return urls
         except Exception as e:
             logging.error(f"读取 {self.input_file} 文件失败：{e}")
             return []
 
     def fetch_page_content(self, url):
-        """使用 Playwright 爬取单个图书详情页面的内容"""
+        """使用 Playwright 爬取单个电影详情页面的内容"""
         proxy = self.get_proxy()
         proxy_config={}
         if proxy:
@@ -151,17 +150,18 @@ class BookDetailsScraper:
                 "password": APP_SECRET
             }
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False, proxy=proxy_config)
+            # browser = p.chromium.launch(headless=False, proxy=proxy_config)
+            browser = p.chromium.launch(headless=False)
             page = browser.new_page()
             try:
-                logging.info(f"正在爬取图书详情：{url}")
+                logging.info(f"正在爬取电影详情：{url}")
                 page.goto(url, timeout=60000)
                 page.wait_for_selector("body", state="attached", timeout=15000)  # 等待页面的 <body> 加载完成
                 content = page.content()
                 browser.close()
                 return content
             except Exception as e:
-                logging.error(f"获取图书详情页面失败：{e}")
+                logging.error(f"获取电影详情页面失败：{e}")
                 browser.close()
                 return None
 
@@ -178,7 +178,8 @@ class BookDetailsScraper:
                 "password": APP_SECRET
             }
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False, proxy=proxy_config)  # 调试时可以设为 False
+            # browser = p.chromium.launch(headless=False, proxy=proxy_config)  # 调试时可以设为 False
+            browser = p.chromium.launch(headless=False)
             page = browser.new_page()
 
             try:
@@ -214,7 +215,7 @@ class BookDetailsScraper:
                 return []
     def parse_details(self, html_content, url):
         """
-        解析图书详情页面，提取图书的基本信息
+        解析电影详情页面，提取电影的基本信息
         这里示例提取标题、作者和评分，具体 XPath 根据实际页面结构调整
         """
         html_tree = etree.HTML(html_content)
@@ -224,8 +225,8 @@ class BookDetailsScraper:
         book_info = ' '.join(book_info_raw.split())  # 去除多余换行、空格，将内容合并为一行
         rating = html_tree.xpath('//*[@id="interest_sectl"]/div/div[2]/strong/text()') #评分
         # imgs = html_tree.xpath('//div[@id="mainpic"]//img/@src')
-        content= html_tree.xpath('//*[@id="link-report"]/div/div//text()')
-        content_cleaned = ''.join(content).strip()  # 合并成一个字符串并去除多余的空白
+        content= html_tree.xpath('//*[@id="link-report-intra"]/span[1]')
+
 
         reviews_url=url+'reviews'
         reviews = self.fetch_reviews(reviews_url)
@@ -242,7 +243,7 @@ class BookDetailsScraper:
             "title": title[0].strip() if title else "未知标题",
             "book_info": book_info,  # 书籍的基本信息
             "rating": rating[0].strip() if rating else "无评分",
-            "content": content_cleaned if content else "无",
+            "content": content if content else "无",
             "reviews": reviews,  # 评论内容
             "url":url
         }
@@ -288,17 +289,17 @@ class BookDetailsScraper:
             logging.error(f"保存到 MongoDB 失败：{e}")
 
     def save_to_csv(self):
-        """将图书详细信息保存到 CSV 文件"""
+        """将电影详细信息保存到 CSV 文件"""
         if not self.book_details:
-            logging.warning("没有图书详细信息，无法保存到 CSV。")
+            logging.warning("没有电影详细信息，无法保存到 CSV。")
             return
 
         df = pd.DataFrame(self.book_details)
         df.to_csv(self.output_csv, index=False, encoding='utf-8-sig')
-        logging.info(f"所有图书详细信息已保存到 {self.output_csv}")
+        logging.info(f"所有电影详细信息已保存到 {self.output_csv}")
 
     def run(self):
-        """主流程：依次爬取每个图书链接，提取详细信息，并保存到 MongoDB"""
+        """主流程：依次爬取每个电影链接，提取详细信息，并保存到 MongoDB"""
         for url in self.book_urls:
             if self.collection.find_one({"url": url}):
                 logging.info(f"URL 已存在于 MongoDB 中，跳过：{url}")
@@ -311,18 +312,18 @@ class BookDetailsScraper:
                 self.book_details.append(detail)
                 self.save_to_mongo(detail)
             time.sleep(random.uniform(2, 5))  # 随机延时，避免被封禁
-        logging.info(f"共提取到 {len(self.book_details)} 本图书的详细信息。")
+        logging.info(f"共提取到 {len(self.book_details)} 本电影的详细信息。")
         self.save_to_csv()
         for detail in self.book_details:
             logging.info(detail)
 
 if __name__ == "__main__":
-    # base_url = "https://search.douban.com/book/subject_search?search_text=宝可梦&cat=1001"
-    # scraper = DoubanScraper(base_url=base_url, max_pages=6)
+    # base_url = "https://search.douban.com/movie/subject_search?search_text=宝可梦&cat=1002"
+    # scraper = DoubanScraper(base_url=base_url, max_pages=8)
     # scraper.run()
     # MongoDB 配置
     MONGO_URI = "mongodb://localhost:27017/"
     MONGO_DB = "pokemon_database"  # 数据库
-    MONGO_COLLECTION = "douban_pokemon"  # 集合名称
-    scraper = BookDetailsScraper(input_file="Douban/urls.txt")
+    MONGO_COLLECTION = "douban_movie"  # 集合名称
+    scraper = MovieDetailsScraper(input_file="urls.txt")
     scraper.run()

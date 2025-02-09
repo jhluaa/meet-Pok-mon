@@ -1,4 +1,3 @@
-# 是有代理ip 模拟浏览器行为爬取 检查无法拿到html的动态加载数据
 from playwright.sync_api import sync_playwright
 from lxml import etree
 import time
@@ -7,7 +6,7 @@ from pymongo import MongoClient
 import logging
 import  random
 import os
-IMAGE_SAVE_PATH='./'
+IMAGE_SAVE_PATH= '../'
 
 APP_KEY = '1205511799882272768'
 APP_SECRET = 'tiiUhVfw'
@@ -100,7 +99,7 @@ class DoubanScraper:
 
 
 class BookDetailsScraper:
-    def __init__(self, input_file="urls.txt", output_csv="book_details.csv"):
+    def __init__(self, input_file="books.txt", output_csv="book_details.csv"):
         """
         初始化 BookDetailsScraper 类
         :param input_file: 存储图书链接的文件名
@@ -324,5 +323,5 @@ if __name__ == "__main__":
     MONGO_URI = "mongodb://localhost:27017/"
     MONGO_DB = "pokemon_database"  # 数据库
     MONGO_COLLECTION = "douban_pokemon"  # 集合名称
-    scraper = BookDetailsScraper(input_file="Douban/urls.txt")
+    scraper = BookDetailsScraper(input_file="urls.txt")
     scraper.run()
