@@ -1,3 +1,6 @@
+
+
+# requests 操作加入ip池 代理 useragent cookie等手段
 import io
 import sys
 import random
