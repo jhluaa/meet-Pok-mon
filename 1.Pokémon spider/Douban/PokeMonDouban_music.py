@@ -150,7 +150,8 @@ class BookDetailsScraper:
                 "password": APP_SECRET
             }
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False, proxy=proxy_config)
+            # browser = p.chromium.launch(headless=False, proxy=proxy_config)
+            browser = p.chromium.launch(headless=False)
             page = browser.new_page()
             try:
                 logging.info(f"正在爬取图书详情：{url}")
@@ -177,7 +178,8 @@ class BookDetailsScraper:
                 "password": APP_SECRET
             }
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False, proxy=proxy_config)  # 调试时可以设为 False
+            # browser = p.chromium.launch(headless=False, proxy=proxy_config)  # 调试时可以设为 False
+            browser = p.chromium.launch(headless=False)
             page = browser.new_page()
 
             try:
@@ -211,39 +213,35 @@ class BookDetailsScraper:
                 logging.error(f"获取评论页面失败：{e}")
                 browser.close()
                 return []
+
     def parse_details(self, html_content, url):
         """
         解析图书详情页面，提取图书的基本信息
-        这里示例提取标题、作者和评分，具体 XPath 根据实际页面结构调整
         """
         html_tree = etree.HTML(html_content)
-        title_raw = html_tree.xpath("//h1//text()") # 书的标题
-        title= [t.strip() for t in title_raw if t.strip()]  # 去除空白和换行符
-        book_info_raw = html_tree.xpath('string(//*[@id="info"])') # 书的信息
+        title_raw = html_tree.xpath("//h1//text()")  # 书的标题
+        title = [t.strip() for t in title_raw if t.strip()]  # 去除空白和换行符
+        book_info_raw = html_tree.xpath('string(//*[@id="info"])')  # 书的信息
         book_info = ' '.join(book_info_raw.split())  # 去除多余换行、空格，将内容合并为一行
-        rating = html_tree.xpath('//*[@id="interest_sectl"]/div/div[2]/strong/text()') #评分
-        # imgs = html_tree.xpath('//div[@id="mainpic"]//img/@src')
-        content= html_tree.xpath('//*[@id="link-report"]/div/div//text()')
-        content_cleaned = ''.join(content).strip()  # 合并成一个字符串并去除多余的空白
+        rating = html_tree.xpath('//*[@id="interest_sectl"]/div/div[2]/strong/text()')  # 评分
 
-        reviews_url=url+'reviews'
+        # 提取内容简介
+        content_element = html_tree.xpath('//*[@id="link-report"]/span[2]')
+        if content_element:
+            content = ''.join(content_element[0].xpath('.//text()')).strip()
+        else:
+            content = "无"  # 如果找不到内容，设置为“无”
+
+        reviews_url = url + 'reviews'
         reviews = self.fetch_reviews(reviews_url)
 
-        # # 下载图片
-        # img_path = None
-        # if imgs:
-        #     img_url = imgs[0]
-        #     img_name = f"{title[0].strip() if title else 'unknown'}_{int(time.time())}"  # 确保文件名唯一
-        #     img_path = self.save_image(img_url, img_name)
-
         detail = {
-
             "title": title[0].strip() if title else "未知标题",
             "book_info": book_info,  # 书籍的基本信息
             "rating": rating[0].strip() if rating else "无评分",
-            "content": content_cleaned if content else "无",
+            "content": content,
             "reviews": reviews,  # 评论内容
-            "url":url
+            "url": url
         }
         return detail
 
@@ -316,12 +314,12 @@ class BookDetailsScraper:
             logging.info(detail)
 
 if __name__ == "__main__":
-    base_url = "https://search.douban.com/music/subject_search?search_text=宝可梦&cat=1003"
-    scraper = DoubanScraper(base_url=base_url, max_pages=2)
-    scraper.run()
-    # MongoDB 配置
-    # MONGO_URI = "mongodb://localhost:27017/"
-    # MONGO_DB = "pokemon_database"  # 数据库
-    # MONGO_COLLECTION = "douban_pokemon_music"  # 集合名称
-    # scraper = BookDetailsScraper(input_file="urls.txt")
+    # base_url = "https://search.douban.com/music/subject_search?search_text=宝可梦&cat=1003"
+    # scraper = DoubanScraper(base_url=base_url, max_pages=2)
     # scraper.run()
+    # MongoDB 配置
+    MONGO_URI = "mongodb://localhost:27017/"
+    MONGO_DB = "pokemon_database"  # 数据库
+    MONGO_COLLECTION = "douban_pokemon_music"  # 集合名称
+    scraper = BookDetailsScraper(input_file="urls.txt")
+    scraper.run()
