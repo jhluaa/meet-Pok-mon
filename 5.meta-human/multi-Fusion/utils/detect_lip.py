@@ -130,12 +130,8 @@ class DetectFaceAndLip:
                 if landmark_points:
                     # 处理检测到的人脸关键点
                     selected_landmarks = landmark_points[0].landmark
-                    # 判断手是否遮挡人脸
-                    # face_occluded = self.is_hand_covering_face_simple(resized_face)
-                    selected_landmarks = landmark_points[0].landmark
-                    if self.__is_face_centered(selected_landmarks, new_w):
-                        # 说明是正脸
-                        # print(1)
+                    if self.__is_face_centered(selected_landmarks):
+
                         current_distance, distance_13 = self.__calculate_lip_distance(
                             selected_landmarks
                         )
@@ -144,8 +140,8 @@ class DetectFaceAndLip:
                             current_distance, distance_13
                         )
                     else:
-                        # print(0)  卡主
-                        pass
+                        continue
+
 
 
                     face_points = []
@@ -362,6 +358,8 @@ class DetectFaceAndLip:
         return frame, target_face_bbox
 
     def __calculate_lip_distance(self, selected_landmarks):
+
+
         # 计算调整后的嘴唇开合距离
         # 定义关键点内唇
         lip_landmark_pairs = [(13, 14), (81, 178), (82, 87), (312, 317), (311, 402)]
@@ -438,6 +436,7 @@ class DetectFaceAndLip:
 
     def update_mouth_status(self, current_distance, distance_13):
         # 将当前距离加入历史记录
+
         self.d_normalized_history.append(current_distance)
         # print(self.d_normalized_history)
         if len(self.d_normalized_history) == 25:
