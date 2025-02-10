@@ -129,11 +129,13 @@ class TbdataScraper:
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/89.0",
         ]
+        # 初始时获取一次代理
+        self.current_proxies = self.get_ip()
 
     def get_proxy(self):
         """通过代理 API 获取代理 IP"""
         try:
-            res = requests.get(PROXY_API_URL, params={'appKey': APP_KEY, 'appSecret': APP_SECRET, 'wt': 'text', 'cnt': 1}, timeout=20)
+            res = requests.get(PROXY_API_URL, params={'appKey': APP_KEY, 'appSecret': APP_SECRET, 'wt': 'text', 'cnt': 1}, timeout=200)
             proxy = res.text.strip()
             logging.info(f"获取代理：{proxy}")
             return proxy
@@ -163,16 +165,18 @@ class TbdataScraper:
     def fetch_page_content(self, url, headers=None, retries=3):
         """获取网页内容并重用代理"""
         headers = headers or self.get_random_headers()
-        proxies = self.get_ip()
+        proxies = self.current_proxies
         for attempt in range(retries):
             try:
                 response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
                 response.encoding = response.apparent_encoding
                 return response.text
             except requests.RequestException as e:
+                time.sleep(10)
                 logging.warning(f"请求 {url} 失败 ({attempt + 1}/{retries})，更换代理：{e}")
-                proxies = self.get_ip()  # 更换代理
-                time.sleep(2)
+                proxies = self.get_ip()
+                self.current_proxies = proxies
+
         return None
 
     def load_urls_from_file(self):
@@ -186,18 +190,25 @@ class TbdataScraper:
             logging.error(f"读取 {self.input_file} 失败：{e}")
             return []
 
-    def parse_tieba_xp(self, html,url):
+    def parse_tieba_xp(self, html, url):
         """解析贴吧信息"""
-
         html_tree = etree.HTML(html)
+        # 获取所有匹配的 <div> 节点
+        comment_nodes = html_tree.xpath(
+            '//div[contains(concat(" ", normalize-space(@class), " "), " d_post_content ") and ' +
+            'contains(concat(" ", normalize-space(@class), " "), " j_d_post_content ")]'
+        )
+
+        # 对每个节点提取所有文本，并去除多余空白
+        comment_texts = [node.xpath('string(.)').strip() for node in comment_nodes]
+
+        # 将所有评论文本合并为一个字符串（可以用换行分隔，也可以用其它分隔符）
+        all_comments = "\n".join(comment_texts)
+
         item = {
             'title': html_tree.xpath('//h3/text()')[0].strip() if html_tree.xpath('//h3/text()') else "",
             'url': url.strip(),
-            'comment': html_tree.xpath(
-    'string(//div[contains(concat(" ", normalize-space(@class), " "), " d_post_content ") and '
-    'contains(concat(" ", normalize-space(@class), " "), " j_d_post_content ")])'
-).strip()
-
+            'comment':all_comments
         }
         time.sleep(random.uniform(1, 3))
         return item
@@ -216,24 +227,32 @@ class TbdataScraper:
         db = client[MONGO_DB]
         collection = db[MONGO_COLLECTION]
 
+        url_counter = 0  # 计数器，统计已爬取 URL 数量
+
         for url in tqdm(self.TB_urls, desc="爬取进度"):
+            # 如果数据已存在，则跳过
             if collection.find_one({"url": url}):
                 logging.info(f"已存在：{url}，跳过")
                 continue
+
+            # 每爬取 10 个 URL 更换一次代理
+            if url_counter % 20 == 0:
+                self.current_proxies = self.get_ip()
+                logging.info(f"切换代理，新代理: {self.current_proxies}")
+            url_counter += 1
 
             html = self.fetch_page_content(url)
             if not html:
                 logging.warning(f"无法获取 {url} 的内容")
                 continue
 
-            details = self.parse_tieba_xp(html, url)
-            if not details:
+            detail = self.parse_tieba_xp(html, url)
+            if not detail:
                 logging.warning(f"未能提取 {url} 的详细信息")
                 continue
 
-            for detail in details:
-                self.TB_details.append(detail)
-                self.save_to_mongo(detail, collection)
+            self.TB_details.append(detail)
+            self.save_to_mongo(detail, collection)
 
             time.sleep(random.uniform(2, 5))
 
