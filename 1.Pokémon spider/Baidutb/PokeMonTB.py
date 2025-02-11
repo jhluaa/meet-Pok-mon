@@ -19,29 +19,92 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 class TbScraper:
     def __init__(self):
         self.search_urls = {
-            "Pokémon": "https://tieba.baidu.com/f?kw=宝可梦&ie=utf-8",
+            "Pokémon": "https://tieba.baidu.com/f?kw=宝可梦剑盾&ie=utf-8",
         }
         self.uapools = [
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36',
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393',
             'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.22 Safari/537.36 SE 2.X MetaSr 1.0',
         ]
+        self.cookie = {
+            'jsdk-uuid': '537ef82d-6630-4235-a6a4-e303c947cdb2',
+            'BIDUPSID': '36342F761A1402D7F20B0E6FBD9FD152',
+            'PSTM': '1734444865',
+            'BAIDU_WISE_UID': 'wapp_1737937726298_602',
+            'H_PS_PSSID': '60274_61027_61804_61987_62053_62064',
+            'BAIDUID': '7E3381EC4665FE4D58281058E080F966:FG=1',
+            'BAIDUID_BFESS': '7E3381EC4665FE4D58281058E080F966:FG=1',
+            'ZFY': ':AA:BF6neSkvcoPM3RTHZVsM:AcudHG4TQ0EOSFKMF5Ftw:C',
+            'wise_device': '0',
+            'Hm_lvt_292b2e1608b0823c1cb6beef7243ef34': '1737937727,1739109682,1739185114',
+            'HMACCOUNT': 'B06FD9D6F1D2EE5E',
+            'USER_JUMP': '-1',
+            'ppfuid': 'undefined',
+            'video_bubble0': '1',
+            'Hm_lvt_049d6c0ca81a94ed2a9b8ae61b3553a5': '1739194720',
+            'Hm_lpvt_049d6c0ca81a94ed2a9b8ae61b3553a5': '1739195873',
+            'arialoadData': 'false',
+            'BDUSS': 'TBGWXNOOWZQbnFFWW1nTWVHaXA1TXBRaE9TWlFmVi1EUFBKNklxbGtyM3NrOUZuSVFBQUFBJCQAAAAAAAAAAAEAAAAu8MX1bHVrZWV2ZW4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOwGqmfsBqpnT',
+            'BDUSS_BFESS': 'TBGWXNOOWZQbnFFWW1nTWVHaXA1TXBRaE9TWlFmVi1EUFBKNklxbGtyM3NrOUZuSVFBQUFBJCQAAAAAAAAAAAEAAAAu8MX1bHVrZWV2ZW4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOwGqmfsBqpnT',
+            'STOKEN': 'cb568d25b33faff94c0a9062a9cfd297119e9aaee6650917448bc55dbe2d0de1',
+            '4123389998_FRSVideoUploadTip': '1',
+            'video_bubble4123389998': '1',
+            'Hm_lpvt_292b2e1608b0823c1cb6beef7243ef34': '1739196191',
+            'XFI': 'c3bbc930-e7b7-11ef-951c-a7a8489dbec6',
+            'BA_HECTOR': '80208180800g25a4ah0h2h2gago89t1jqk1p01u',
+            'XFCS': '557C1FAE7FFAB290C3FFC97EFD56E9146633706A3CB10CC7E7F01ACB2AE91B00',
+            'XFT': '+7e/4kUPOSccRr5/GMJ7s4onHRdWuW0QjtAVfwy19y0=',
+            'RT': '"z=1&dm=baidu.com&si=529ba208-5353-4024-9ad2-ae84f5395d99&ss=m6z2yc0v&sl=5&tt=9mw&bcn=https%3A%2F%2Ffclog.baidu.com%2Flog%2Fweirwood%3Ftype%3Dperf&ld=1k1m9&ul=1k4x7"',
+        }
+        self.uapools = [
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/89.0",
+        ]
         self.all_tb_urls = []
 
-    def get_random_headers(self):
-        """获取随机的请求头"""
-        random_user_agent = random.choice(self.uapools)
-        return {"User-Agent": random_user_agent}
-
-    def get_html_content(self, url, headers):
-        """请求指定URL，并返回网页HTML内容"""
+    def get_proxy(self):
+        """通过代理 API 获取代理 IP"""
         try:
-            response = requests.get(url, headers=headers, timeout=20)
-            response.encoding = 'utf-8'
-            return response.text
-        except requests.exceptions.RequestException as e:
-            logging.error(f"请求 {url} 失败：{e}")
+            res = requests.get(PROXY_API_URL, params={'appKey': APP_KEY, 'appSecret': APP_SECRET, 'wt': 'text', 'cnt': 1}, timeout=200)
+            proxy = res.text.strip()
+            logging.info(f"获取代理：{proxy}")
+            return proxy
+        except requests.RequestException as e:
+            logging.error(f"获取代理失败：{e}")
             return None
+
+    def get_ip(self):
+        """构造 requests 代理参数"""
+        proxy = self.get_proxy()
+        if proxy:
+            proxy_meta = f"http://{APP_KEY}:{APP_SECRET}@{proxy}"
+            return {'http': proxy_meta, 'https': proxy_meta}
+        return None
+
+    def get_random_headers(self):
+        """获取随机请求头"""
+        # headers = {"User-Agent": random.choice(self.uapools)}
+        headers = {
+        "User-Agent": random.choice(self.uapools)
+        }
+        if self.cookie:
+            headers["Cookie"] = "; ".join(f"{k}={v}" for k, v in self.cookie.items())
+        return headers
+    def fetch_page_content(self, url, headers=None, retries=3):
+        """获取网页内容并重用代理"""
+        headers = headers or self.get_random_headers()
+        proxies = self.current_proxies
+        for attempt in range(retries):
+            try:
+                response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
+                response.encoding = response.apparent_encoding
+                return response.text
+            except requests.RequestException as e:
+                time.sleep(10)
+                logging.warning(f"请求 {url} 失败 ({attempt + 1}/{retries})，更换代理：{e}")
+                proxies = self.get_ip()
+                self.current_proxies = proxies
 
 
 
@@ -70,13 +133,18 @@ class TbScraper:
     def run(self):
         """入口函数，爬取所有分页的 URL，并保存结果"""
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+        url_counter = 0  # 计数器，统计已爬取URL数量
         for category, url in self.search_urls.items():
             logging.info(f"开始爬取贴吧 {category} ，目标URL: {url}")
-            self.headers = self.get_random_headers()
-            for i in range(0, 9201, 50):
+            # 每爬取 10 个 URL 更换一次代理
+            if url_counter % 20 == 0:
+                self.current_proxies = self.get_ip()
+                logging.info(f"切换代理，新代理: {self.current_proxies}")
+            url_counter += 1
+            for i in range(0, 67801, 50):
                 root_url = f"{url}&pn={i}"
                 logging.info(f"爬取分页 URL: {root_url}")
-                html_content = self.get_html_content(root_url, self.headers)
+                html_content = self.fetch_page_content(root_url)
                 if html_content:
                     self.parse_tburl_re(html_content)
                 time.sleep(random.uniform(3, 7))  # 随机延时 3-7 秒，避免被反爬机制封禁
@@ -260,10 +328,10 @@ class TbdataScraper:
 
 
 if __name__ == '__main__':
-    # scraper = TbScraper() # urls链接
-    # scraper.run()
-    MONGO_URI = "mongodb://localhost:27017/"
-    MONGO_DB = "pokemon_database"  # 数据库
-    MONGO_COLLECTION = "Tieba_pokemon"
-    scraper = TbdataScraper(input_file="urls.txt")
+    scraper = TbScraper() # urls链接
     scraper.run()
+    # MONGO_URI = "mongodb://localhost:27017/"
+    # MONGO_DB = "pokemon_database"  # 数据库
+    # MONGO_COLLECTION = "Tieba_pokemon"
+    # scraper = TbdataScraper(input_file="urls.txt")
+    # scraper.run()
