@@ -328,10 +328,10 @@ class TbdataScraper:
 
 
 if __name__ == '__main__':
-    scraper = TbScraper() # urls链接
-    scraper.run()
-    # MONGO_URI = "mongodb://localhost:27017/"
-    # MONGO_DB = "pokemon_database"  # 数据库
-    # MONGO_COLLECTION = "Tieba_pokemon"
-    # scraper = TbdataScraper(input_file="urls.txt")
+    # scraper = TbScraper() # urls链接
     # scraper.run()
+    MONGO_URI = "mongodb://localhost:27017/"
+    MONGO_DB = "pokemon_database"  # 数据库
+    MONGO_COLLECTION = "Tieba_pokemon_jiandun"
+    scraper = TbdataScraper(input_file="urls.txt")
+    scraper.run()
