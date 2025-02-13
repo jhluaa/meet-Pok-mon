@@ -101,7 +101,7 @@ class TbScraper:
                 response.encoding = response.apparent_encoding
                 return response.text
             except requests.RequestException as e:
-                time.sleep(10)
+                time.sleep(5)
                 logging.warning(f"请求 {url} 失败 ({attempt + 1}/{retries})，更换代理：{e}")
                 proxies = self.get_ip()
                 self.current_proxies = proxies
@@ -147,7 +147,7 @@ class TbScraper:
                 html_content = self.fetch_page_content(root_url)
                 if html_content:
                     self.parse_tburl_re(html_content)
-                time.sleep(random.uniform(3, 7))  # 随机延时 3-7 秒，避免被反爬机制封禁
+                time.sleep(random.uniform(1, 4))  # 随机延时 1-4 秒，避免被反爬机制封禁
         self.save_url()  # 保存所有抓取到的 URL
 
 
@@ -240,7 +240,7 @@ class TbdataScraper:
                 response.encoding = response.apparent_encoding
                 return response.text
             except requests.RequestException as e:
-                time.sleep(10)
+                time.sleep(3)
                 logging.warning(f"请求 {url} 失败 ({attempt + 1}/{retries})，更换代理：{e}")
                 proxies = self.get_ip()
                 self.current_proxies = proxies
@@ -322,7 +322,7 @@ class TbdataScraper:
             self.TB_details.append(detail)
             self.save_to_mongo(detail, collection)
 
-            time.sleep(random.uniform(2, 5))
+            time.sleep(random.uniform(1, 3))
 
         logging.info(f"爬取完成，共提取 {len(self.TB_details)} 条贴吧评论")
 
