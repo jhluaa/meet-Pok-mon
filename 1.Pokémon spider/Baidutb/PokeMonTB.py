@@ -101,7 +101,7 @@ class TbScraper:
                 response.encoding = response.apparent_encoding
                 return response.text
             except requests.RequestException as e:
-                time.sleep(5)
+                time.sleep(2)
                 logging.warning(f"请求 {url} 失败 ({attempt + 1}/{retries})，更换代理：{e}")
                 proxies = self.get_ip()
                 self.current_proxies = proxies
