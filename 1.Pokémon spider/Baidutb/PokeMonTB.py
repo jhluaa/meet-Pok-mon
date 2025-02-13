@@ -8,7 +8,8 @@ import re
 from pymongo import MongoClient
 from tqdm import tqdm
 from lxml import  etree
-APP_KEY = '1206245507182514176'
+############################1.修改api_key#########################
+APP_KEY = '1206245507182514176'   
 APP_SECRET = 'YJa120kF'
 PROXY_API_URL = "https://api.xiaoxiangdaili.com/ip/get"
 
@@ -18,6 +19,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # tbody问题 使用正则化匹配策略
 class TbScraper:
     def __init__(self):
+         ############################修改url 朱紫 ， 口袋妖怪 . ########################
         self.search_urls = {
             "Pokémon": "https://tieba.baidu.com/f?kw=宝可梦剑盾&ie=utf-8",
         }
@@ -26,6 +28,7 @@ class TbScraper:
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393',
             'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.22 Safari/537.36 SE 2.X MetaSr 1.0',
         ]
+        ############################修改cookie#########################
         self.cookie = {
             'jsdk-uuid': '537ef82d-6630-4235-a6a4-e303c947cdb2',
             'BIDUPSID': '36342F761A1402D7F20B0E6FBD9FD152',
@@ -141,6 +144,7 @@ class TbScraper:
                 self.current_proxies = self.get_ip()
                 logging.info(f"切换代理，新代理: {self.current_proxies}")
             url_counter += 1
+               ############################尾页+1  67801########################
             for i in range(0, 67801, 50):
                 root_url = f"{url}&pn={i}"
                 logging.info(f"爬取分页 URL: {root_url}")
