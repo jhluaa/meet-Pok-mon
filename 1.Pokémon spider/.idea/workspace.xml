@@ -5,7 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="51e698c6-cef6-44c4-bb08-e03d32dfe977" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Baidutb/PokeMonTB.py" beforeDir="false" afterPath="$PROJECT_DIR$/Baidutb/PokeMonTB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Baidutb/Pokémon jiandun.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Baidutb/urls.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,7 +47,7 @@
     &quot;Python.test.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/luke/Desktop/project/meet-Pok-mon/6.Computer Vision&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/luke/Desktop/project/Kokoro-82M&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -241,6 +244,10 @@
       <workItem from="1739318562059" duration="6181000" />
       <workItem from="1739403754417" duration="4885000" />
       <workItem from="1739452508255" duration="3177000" />
+      <workItem from="1739458437927" duration="41000" />
+      <workItem from="1739490481236" duration="1971000" />
+      <workItem from="1739532892913" duration="632000" />
+      <workItem from="1739540196606" duration="758000" />
     </task>
     <servers />
   </component>
@@ -251,7 +258,7 @@
     <SUITE FILE_PATH="coverage/1_Pokémon_spider$PokemonDoubanScraper__1_.coverage" NAME="PokemonDoubanScraper (1) Coverage Results" MODIFIED="1739064732682" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/1_Pokémon_spider$PokeMonDouban__1_.coverage" NAME="PokeMonDouban (1) Coverage Results" MODIFIED="1739097749204" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/1_Pokémon_spider$PokeMonDouban_music.coverage" NAME="PokeMonDouban_music Coverage Results" MODIFIED="1739106174386" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Douban" />
-    <SUITE FILE_PATH="coverage/1_Pokémon_spider$PokeMonTB.coverage" NAME="PokeMonTB Coverage Results" MODIFIED="1739444632892" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Baidutb" />
+    <SUITE FILE_PATH="coverage/1_Pokémon_spider$PokeMonTB.coverage" NAME="PokeMonTB Coverage Results" MODIFIED="1739491372970" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Baidutb" />
     <SUITE FILE_PATH="coverage/1_Pokémon_spider$Dou_spider.coverage" NAME="Dou_spider Coverage Results" MODIFIED="1738847267886" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/1_Pokémon_spider$PokeMonDouban_movie.coverage" NAME="PokeMonDouban_movie Coverage Results" MODIFIED="1739102101980" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Douban" />
     <SUITE FILE_PATH="coverage/1_Pokémon_spider$test.coverage" NAME="test Coverage Results" MODIFIED="1739194641351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

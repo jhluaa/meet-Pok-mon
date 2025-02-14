@@ -282,7 +282,7 @@ class TbdataScraper:
             'url': url.strip(),
             'comment':all_comments
         }
-        time.sleep(random.uniform(1, 3))
+        time.sleep(random.uniform(1, 2))
         return item
 
     def save_to_mongo(self, data, collection):
@@ -326,7 +326,7 @@ class TbdataScraper:
             self.TB_details.append(detail)
             self.save_to_mongo(detail, collection)
 
-            time.sleep(random.uniform(1, 3))
+            time.sleep(random.uniform(1, 2))
 
         logging.info(f"爬取完成，共提取 {len(self.TB_details)} 条贴吧评论")
 

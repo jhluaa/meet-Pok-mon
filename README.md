@@ -5,3 +5,4 @@
 - 2025-2-7 接入阿里tts 、百度tts 语音合成接口。
 - 2025-2-9 封装两种爬虫方式requests以及playwright。
 - 2025-2-12 增加fish-speech 在线tts调用，在线api不支持国内使用。
+- 2025-2-15 增加Kokoro离线tts合成。
