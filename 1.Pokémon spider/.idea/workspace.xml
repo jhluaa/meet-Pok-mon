@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51e698c6-cef6-44c4-bb08-e03d32dfe977" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Baidutb/PokeMonTB.py" beforeDir="false" afterPath="$PROJECT_DIR$/Baidutb/PokeMonTB.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Baidutb/Pokémon jiandun.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Baidutb/urls.txt" afterDir="false" />
-    </list>
+    <list default="true" id="51e698c6-cef6-44c4-bb08-e03d32dfe977" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -248,6 +243,7 @@
       <workItem from="1739490481236" duration="1971000" />
       <workItem from="1739532892913" duration="632000" />
       <workItem from="1739540196606" duration="758000" />
+      <workItem from="1739578491537" duration="825000" />
     </task>
     <servers />
   </component>
