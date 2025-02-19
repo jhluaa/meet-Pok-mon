@@ -21,7 +21,7 @@ class TbScraper:
     def __init__(self):
          ############################修改url 朱紫 ， 口袋妖怪 . ########################
         self.search_urls = {
-            "Pokémon": "https://tieba.baidu.com/f?kw=宝可梦剑盾&ie=utf-8",
+            "Pokémon": "https://tieba.baidu.com/f?kw=宝可梦大集结&ie=utf-8",
         }
         self.uapools = [
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36',
@@ -126,7 +126,7 @@ class TbScraper:
         except Exception as e:
             logging.error(f"正则解析失败: {e}")
 
-    def save_url(self, file_path="urls.txt"):
+    def save_url(self, file_path="temp.txt"):
         """将 all_tb_urls 列表中的所有 URL 保存到本地文本文件"""
         with open(file_path, "w", encoding="utf-8") as f:
             for url in self.all_tb_urls:
@@ -145,20 +145,20 @@ class TbScraper:
                 logging.info(f"切换代理，新代理: {self.current_proxies}")
             url_counter += 1
                ############################尾页+1  67801########################
-            for i in range(0, 67801, 50):
+            for i in range(0, 5000, 50):
                 root_url = f"{url}&pn={i}"
                 logging.info(f"爬取分页 URL: {root_url}")
                 html_content = self.fetch_page_content(root_url)
                 if html_content:
                     self.parse_tburl_re(html_content)
-                time.sleep(random.uniform(1, 4))  # 随机延时 1-4 秒，避免被反爬机制封禁
+                time.sleep(random.uniform(1, 2))  # 随机延时 1-4 秒，避免被反爬机制封禁
         self.save_url()  # 保存所有抓取到的 URL
 
 
 
 
 class TbdataScraper:
-    def __init__(self, input_file="urls.txt"):
+    def __init__(self, input_file="temp.txt"):
         """
         初始化爬虫类
         :param input_file: 存储图书链接的文件名
@@ -336,6 +336,6 @@ if __name__ == '__main__':
     # scraper.run()
     MONGO_URI = "mongodb://localhost:27017/"
     MONGO_DB = "pokemon_database"  # 数据库
-    MONGO_COLLECTION = "Tieba_pokemon_jiandun"
-    scraper = TbdataScraper(input_file="urls.txt")
+    MONGO_COLLECTION = "Tieba_pokemon_DJJ"
+    scraper = TbdataScraper(input_file="temp.txt")
     scraper.run()
