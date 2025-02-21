@@ -145,7 +145,7 @@ class TbScraper:
                 logging.info(f"切换代理，新代理: {self.current_proxies}")
             url_counter += 1
                ############################尾页+1  67801########################
-            for i in range(0, 5000, 50):
+            for i in range(0, 20600, 50):
                 root_url = f"{url}&pn={i}"
                 logging.info(f"爬取分页 URL: {root_url}")
                 html_content = self.fetch_page_content(root_url)

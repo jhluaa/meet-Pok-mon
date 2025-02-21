@@ -7,6 +7,8 @@
     <list default="true" id="b701d0b2-343c-4cdf-8155-292b7e4ccfae" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Baidutb/PokeMonTB.py" beforeDir="false" afterPath="$PROJECT_DIR$/Baidutb/PokeMonTB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Baidutb/temp.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../5.meta-human/lip&amp;ASR/utils/detect_lip.py" beforeDir="false" afterPath="$PROJECT_DIR$/../5.meta-human/lip&amp;ASR/utils/detect_lip.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,6 +96,7 @@
       <workItem from="1739789323006" duration="2445000" />
       <workItem from="1739834153586" duration="659000" />
       <workItem from="1739876846343" duration="14000" />
+      <workItem from="1740008003569" duration="3469000" />
     </task>
     <servers />
   </component>
@@ -112,6 +115,6 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/1_Pokémon_spider$PokeMonTB.coverage" NAME="PokeMonTB Coverage Results" MODIFIED="1739834199538" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Baidutb" />
+    <SUITE FILE_PATH="coverage/1_Pokémon_spider$PokeMonTB.coverage" NAME="PokeMonTB Coverage Results" MODIFIED="1740047413409" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Baidutb" />
   </component>
 </project>
