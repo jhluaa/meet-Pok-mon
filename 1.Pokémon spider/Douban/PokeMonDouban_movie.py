@@ -11,7 +11,7 @@ IMAGE_SAVE_PATH= '../'
 APP_KEY = '1205511799882272768'
 APP_SECRET = 'tiiUhVfw'
 PROXY_API_URL = "https://api.xiaoxiangdaili.com/ip/get"
-import  pandas as pd
+import pandas as pd
 class DoubanScraper:
     def __init__(self, base_url,max_pages=5,output_file="urls.txt"):
         """

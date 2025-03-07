@@ -7,9 +7,9 @@ from answer_search import *
 app = Flask(__name__)
 
 # Neo4j 连接配置
-uri = "neo4j://10.168.2.232:7687"  # Neo4j 服务器 URI
+uri = "bolt://localhost:7687"  # Neo4j 服务器 URI
 username = "neo4j"
-password = "n91msw52PSOrM#7#"
+password = "woshishamo630"
 
 driver = GraphDatabase.driver(uri, auth=(username, password))
 

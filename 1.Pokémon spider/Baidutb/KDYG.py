@@ -341,7 +341,7 @@ class TbdataScraper:
             self.TB_details.append(detail)
             self.save_to_mongo(detail, collection)
 
-            time.sleep(random.uniform(0.5, 1))
+            time.sleep(random.uniform(1, 2))
 
         logging.info(f"爬取完成，共提取 {len(self.TB_details)} 条贴吧评论")
 

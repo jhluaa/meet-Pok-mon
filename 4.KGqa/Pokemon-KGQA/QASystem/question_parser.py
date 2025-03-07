@@ -88,7 +88,7 @@ class QuestionPaser:
             elif question_type == "Pokémon_attr":
                 sql = self.sql_transfer(question_type, entity_dict)
             # 打印查询语句，确认sql是否正确构建
-            print(f"SQL for {question_type}:", sql)
+            # print(f"SQL for {question_type}:", sql)
 
             if sql:
                 sql_["sql"] = sql
@@ -149,11 +149,11 @@ class QuestionPaser:
                     "MATCH (a:Person)-[:has_pokemon]-(b:Pokémon) WHERE a.name='{0}' RETURN b.name".format(i)
                     for i in entities
                 ]
-            elif question_type == "person_town":
-                sql = [
-                    "MATCH (a:Person)-[:come_from]-(b:Town) WHERE a.name='{0}' RETURN b.name".format(i)
-                    for i in entities
-                ]
+            # elif question_type == "person_town":
+            #     sql = [
+            #         "MATCH (a:Person)-[:come_from]-(b:Town) WHERE a.name='{0}' RETURN b.name".format(i)
+            #         for i in entities
+            #     ]
             elif question_type == "person_region":
                 sql = [
                     "MATCH (a:Person)-[:come_from]-(b:Region) WHERE a.name='{0}' RETURN b.name".format(i)
@@ -221,9 +221,9 @@ class QuestionPaser:
                 ]
 
         elif keys == "Town":
-            if question_type == "has_celebrity":
+            if question_type == "Town_celebrity":
                 sql = [
-                    "MATCH (a:Town)-[:HAS_CELEBRITY]-(b:Person) WHERE a.name='{0}' RETURN b.name".format(i)
+                    "MATCH (a:Town)-[:has_celebrity]-(b:Person) WHERE a.name='{0}' RETURN b.name".format(i)
                     for i in entities
                 ]
             elif question_type == "Town_Region":

@@ -138,15 +138,15 @@ class QuestionClassifier:
 
 
             # 问句中召唤师来自哪里
-        if self.check_words(self.town_qwds, question) and 'Person' in types:
-            question_type = 'person_town'
-            question_types.append(question_type)
+        # if self.check_words(self.town_qwds, question) and 'Person' in types:
+        #     question_type = 'person_town'
+        #     question_types.append(question_type)
             # 问句中召唤师 地方
         if self.check_words(self.region_qwds, question) and 'Person' in types:
             question_type = 'person_region'
             question_types.append(question_type)
         # 问 宝可梦进化
-        if self.check_words(self.evolves_qwds, question) and 'Pokémon' in types :
+        if self.check_words(self.evolves_qwds, question)  and 'Pokémon' in types :
             question_type = 'Pokemon_evolves'
             question_types.append(question_type)
         #问宝可梦类型
@@ -181,11 +181,11 @@ class QuestionClassifier:
             question_types.append(question_type)
         # 若没有查到相关的外部查询信息，那么则将人物的描述信息返回
         if question_types == [] and 'Person' in types:
-            question_types = ['person_attr']
+            question_types = ['person_info']
 
         # 若没有查到相关的外部查询信息，那么则将该宝可梦的描述信息返回
-        if question_types == [] and '' in types:
-            question_types = ['Pokémon_attr']
+        if question_types == [] and 'Pokémon' in types:
+            question_types = ['Pokemon_info']
 
         # 将多个分类结果进行合并处理，组装成一个字典
         data['question_types'] = question_types

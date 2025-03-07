@@ -10,7 +10,7 @@ class MedicalGraphFromJson:
     def __init__(self):
         cur_dir = '/'.join(os.path.abspath(__file__).split('/')[:-1])
         self.data_path = os.path.join(cur_dir, 'data')
-        self.g=Graph("bolt://localhost:7687", auth=("neo4j", "tczaslw278/"))
+        self.g=Graph("bolt://localhost:7687", auth=("neo4j", "woshishamo630"))
         self.rel_file='relations.json'
         self.node_file='entities.json'
 

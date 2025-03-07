@@ -16,7 +16,7 @@ import onnxruntime as ort
 
 class DetectFaceAndLip:
     # 唇动检测
-    def __init__(self, funasr_event, camera_index=1):
+    def __init__(self, funasr_event, camera_index=0):
         self.funasr_event = funasr_event
         # 设定说话检测的频率
         self.fps = 25

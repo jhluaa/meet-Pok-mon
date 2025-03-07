@@ -39,10 +39,11 @@ def append_relationship_type_to_json(input_file, output_file, start_entity_type,
                 parts = line.strip().split(",")
                 if len(parts) == 3:
                     start_entity, end_entity, _ = parts
-                    new_rel["rels"].append({
-                        "start_entity_name": start_entity,
-                        "end_entity_name": end_entity
-                    })
+                    if _ == rel_name:
+                        new_rel["rels"].append({
+                            "start_entity_name": start_entity,
+                            "end_entity_name": end_entity
+                        })
         data.append(new_rel)
 
     # 写回 JSON 文件
@@ -53,12 +54,12 @@ def append_relationship_type_to_json(input_file, output_file, start_entity_type,
 
 
 append_relationship_type_to_json(
-    "../relations_data/location_pokemon.txt",
-    "../data/relations.json",
-    start_entity_type="Region",
-    end_entity_type="Pokémon",
-    rel_type="location_pokemon",
-    rel_name="有哪些宝可梦"
+    "relations_data/come_from.txt",
+    "data/relations.json",
+    start_entity_type="Person",
+    end_entity_type="Region",
+    rel_type="come_from",
+    rel_name="来自"
 )
 
 
