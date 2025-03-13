@@ -9,7 +9,7 @@ app = Flask(__name__)
 # Neo4j 连接配置
 uri = "bolt://localhost:7687"  # Neo4j 服务器 URI
 username = "neo4j"
-password = "woshishamo630"
+password = "tczaslw278/"
 
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
@@ -105,4 +105,4 @@ def execute_query():
 
 if __name__ == "__main__":
     # 创建 ChatBotGraph 实例并启动 Flask
-    app.run(host="0.0.0.0", port=5003, debug=True)
+    app.run(host="0.0.0.0", port=5203, debug=True)

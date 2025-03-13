@@ -5,7 +5,7 @@ import json
 
 class AnswerSearcher:
     def __init__(self):
-        self.g = Graph("bolt://localhost:7687", auth=("neo4j", "woshishamo630"))
+        self.g = Graph("bolt://localhost:7687", auth=("neo4j", "tczaslw278/"))
 
     def search_main(self, sqls):
         '''
