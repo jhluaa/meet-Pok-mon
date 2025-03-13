@@ -28,24 +28,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python.data_cleaning.executor": "Run",
-    "Python.data_cleaningfordouban.executor": "Run",
-    "Python.data_strip.executor": "Run",
-    "Python.mert_json.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "D:/meet-Pok-mon/2. Feature Engineering & Data Visualization",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python.data_cleaning.executor&quot;: &quot;Run&quot;,
+    &quot;Python.data_cleaningfordouban.executor&quot;: &quot;Run&quot;,
+    &quot;Python.data_strip.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mert_json.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/meet-Pok-mon/1.Pokémon spider&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\luke\Desktop\project\meet-Pok-mon\2. Feature Engineering &amp; Data Visualization" />
@@ -57,29 +57,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Python.data_strip">
-    <configuration name="data_cleaning" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="2. Feature Engineering &amp; Data Visualization" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="C:\Users\luke\Desktop\project\meet-Pok-mon\2. Feature Engineering &amp; Data Visualization\clean\data_cleaning.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="data_cleaningfordouban" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="2. Feature Engineering &amp; Data Visualization" />
       <option name="ENV_FILES" value="" />
@@ -153,7 +130,6 @@
       <list>
         <item itemvalue="Python.data_strip" />
         <item itemvalue="Python.mert_json" />
-        <item itemvalue="Python.data_cleaning" />
         <item itemvalue="Python.data_cleaningfordouban" />
       </list>
     </recent_temporary>
@@ -175,7 +151,7 @@
       <option name="presentableId" value="Default" />
       <updated>1741832686252</updated>
       <workItem from="1741832687318" duration="7840000" />
-      <workItem from="1741863762771" duration="620000" />
+      <workItem from="1741863762771" duration="894000" />
     </task>
     <servers />
   </component>
