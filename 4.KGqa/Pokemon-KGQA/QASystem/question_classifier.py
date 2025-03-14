@@ -1,7 +1,10 @@
 # coding: utf-8
-
 import os
 import ahocorasick
+from extract_ner import get_ner_result,rule_find, tfidf_alignment
+from Intent_Recognition import Intent_Recognition
+rule = rule_find()
+tfidf_r = tfidf_alignment()
 
 class QuestionClassifier:
     def __init__(self):
@@ -48,14 +51,19 @@ class QuestionClassifier:
 
         print('model init finished ......')
 
-        return
+        self.ner_ = False  # 是否开启NER实体识别
+        self.intent_Recognition = False # 是否开启意图识别
+
 
     def classify(self, question):
         '''
         分类主函数
         '''
         data = {}
-        pokemon_dict = self.check_pokemon(question) # 拿到实体
+        if self.ner_:
+            pokemon_dict =get_ner_result(question,rule,tfidf_r)
+        else:
+            pokemon_dict = self.check_pokemon(question) # 拿到实体
 
         if not pokemon_dict:
             return {}
@@ -68,8 +76,9 @@ class QuestionClassifier:
         question_type = ''
         question_types = []
         #print(types) ['identity']
-        # 宝可梦特性
-
+        # 是否使用本地大模型进行意图识别
+        if self.intent_Recognition:
+            question_types.extend(Intent_Recognition(question))
         #召唤师
         if self.check_words(self.person_wds, question) and ('Person' in types):
             if self.check_words(["英文"], question):

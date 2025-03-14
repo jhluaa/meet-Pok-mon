@@ -13,9 +13,9 @@ import ahocorasick
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-cache_model = 'best_roberta_rnn_model_ent_aug'
+cache_model = 'best_roberta'
 
-base_dir = r"D:/meet-Pok-mon/4.KGqa/Pokemon-KGQA/"
+base_dir = r"/data/KGqa/Pokemon-KGQA/"
 def get_data(path,max_len=None):
     all_text,all_tag = [],[]
     with open(path,'r',encoding='utf8') as f:
@@ -44,7 +44,7 @@ class rule_find:
         self.ahos = [ahocorasick.Automaton() for i in range(len(self.type2idx))]
 
         for type in idx2type:
-            with open(os.path.join('data','ent_aug',f'{type}.txt'),encoding='utf-8') as f:
+            with open(os.path.join(base_dir,'entity_data',f'{type}.txt'),encoding='utf-8') as f:
                 all_en = f.read().split('\n')
             for en in all_en:
                 en = en.split(' ')[0]
@@ -93,119 +93,72 @@ def find_entities(tag):
             i = i + 1
     return result
 
-class tfidf_alignment():
+class tfidf_alignment:
     def __init__(self):
         eneities_path = os.path.join(base_dir, 'entity_data/')
         files = os.listdir(eneities_path)
+        # 排除 .py 文件
         files = [docu for docu in files if '.py' not in docu]
-
         self.tag_2_embs = {}
         self.tag_2_tfidf_model = {}
         self.tag_2_entity = {}
         for ty in files:
             with open(os.path.join(eneities_path, ty), 'r', encoding='utf-8') as f:
                 entities = f.read().split('\n')
-                entities = [ent for ent in entities if len(ent.split(' ')[0]) <= 15 and len(ent.split(' ')[0]) >= 1]
+                # 过滤长度过长或过短的实体
+                entities = [
+                    ent for ent in entities
+                    if 1 <= len(ent.split(' ')[0]) <= 15
+                ]
+                # 只取每行的第一个词
                 en_name = [ent.split(' ')[0] for ent in entities]
+                # 去掉文件名后缀 .txt
                 ty = ty.strip('.txt')
+                # 记录实体列表
                 self.tag_2_entity[ty] = en_name
+                # 初始化 TF-IDF，
                 tfidf_model = TfidfVectorizer(analyzer="char")
-                embs = tfidf_model.fit_transform(en_name).toarray()
-                self.tag_2_embs[ty] = embs
+                embs = tfidf_model.fit_transform(en_name)  # 稀疏矩阵
                 self.tag_2_tfidf_model[ty] = tfidf_model
-    def align(self,ent_list):
+                self.tag_2_embs[ty] = embs  # 保持稀疏格式
+    def align(self, ent_list):
+        """
+        ent_list 为 [(start_idx, end_idx, cls, ent), ...]
+        返回一个 dict：{cls: best_matched_entity_name}
+        """
         new_result = {}
-        for s,e,cls,ent in ent_list:
-            ent_emb = self.tag_2_tfidf_model[cls].transform([ent])
+        for s, e, cls, ent in ent_list:
+            # 若该类型不在词典中，则跳过
+            if cls not in self.tag_2_tfidf_model:
+                continue
+
+            # 对当前实体做 TF-IDF 编码
+            ent_emb = self.tag_2_tfidf_model[cls].transform([ent])  # 稀疏矩阵
+            # 和已知实体向量 self.tag_2_embs[cls] 做相似度
             sim_score = cosine_similarity(ent_emb, self.tag_2_embs[cls])
             max_idx = sim_score[0].argmax()
-            max_score = sim_score[0][max_idx]
+            max_score = sim_score[0, max_idx]
 
+            # 如果相似度大于阈值 0.5，就认为匹配
             if max_score >= 0.5:
-                new_result[cls]= self.tag_2_entity[cls][max_idx]
+                new_result[cls] = self.tag_2_entity[cls][max_idx]
+
         return new_result
 
 
-class Entity_Extend:
-    def __init__(self):
-        eneities_path = os.path.join(base_dir,'entity_data/')
-        files = os.listdir(eneities_path)
-        files = [docu for docu in files if '.py' not in docu]
-
-        self.type2entity = {}
-        self.type2weight = {}
-        for type in files:
-            with open(os.path.join(eneities_path,type),'r',encoding='utf-8') as f:
-                entities = f.read().split('\n')
-                en_name = [ent for ent in entities if len(ent.split(' ')[0])<=15 and len(ent.split(' ')[0])>=1]
-                en_weight = [1]*len(en_name)
-                type = type.strip('.txt')
-                self.type2entity[type] = en_name
-                self.type2weight[type] = en_weight
-    def no_work(self,te,tag,type):
-        return te,tag
-
-    # 1. 实体替换
-    def entity_replace(self,te,ta,type):
-        choice_ent = random.choices(self.type2entity[type],weights=self.type2weight[type],k=1)[0]
-        ta = ["B-"+type] + ["I-"+type]*(len(choice_ent)-1)
-        return list(choice_ent),ta
-
-    # 2. 实体掩盖
-    def entity_mask(self,te,ta,type):
-        if(len(te)<=3):
-            return te,ta
-        elif(len(te)<=5):
-            te.pop(random.randint(0,len(te)-1))
-        else:
-            te.pop(random.randint(0, len(te) - 1))
-            te.pop(random.randint(0, len(te) - 1))
-        ta = ["B-" + type] + ["I-" + type] * (len(te) - 1)
-        return te,ta
-
-    # 3. 实体拼接
-    def entity_union(self,te,ta,type):
-        words = ['和','与','以及']
-        wor = random.choice(words)
-        choice_ent = random.choices(self.type2entity[type],weights=self.type2weight[type],k=1)[0]
-        te = te+list(wor)+list(choice_ent)
-        ta = ta+['O']*len(wor)+["B-"+type] + ["I-"+type]*(len(choice_ent)-1)
-        return te,ta
-    def entities_extend(self,text,tag,ents):
-        cho = [self.no_work,self.entity_union,self.entity_mask,self.entity_replace,self.no_work]
-        new_text = text.copy()
-        new_tag = tag.copy()
-        sign = 0
-        for ent in ents:
-            p = random.choice(cho)
-            te,ta = p(text[ent[0]:ent[1]+1],tag[ent[0]:ent[1]+1],ent[2])
-            new_text[ent[0] + sign:ent[1] + 1 + sign], new_tag[ent[0] + sign:ent[1] + 1 + sign] = te,ta
-            sign += len(te)-(ent[1]-ent[0]+1)
-
-        return new_text, new_tag
-
-
-
-
 class Nerdataset(Dataset):
-    def __init__(self,all_text,all_label,tokenizer,max_len,tag2idx,is_dev=False,enhance_data=False):
+    def __init__(self,all_text,all_label,tokenizer,max_len,tag2idx,is_dev=False):
         self.all_text = all_text
         self.all_label = all_label
         self.tokenizer = tokenizer
         self.max_len= max_len
         self.tag2idx = tag2idx
         self.is_dev = is_dev
-        self.entity_extend = Entity_Extend()
-        self.enhance_data = enhance_data
     def __getitem__(self, x):
         text, label = self.all_text[x], self.all_label[x]
         if self.is_dev:
             max_len = min(len(self.all_text[x])+2,500)
         else:
-            # 几种策略
-            if self.enhance_data and e>=7 and e%2==1:
-                ents = find_entities(label)
-                text,label = self.entity_extend.entities_extend(text,label,ents)
             max_len = self.max_len
         text, label =text[:max_len - 2], label[:max_len - 2]
 
@@ -308,15 +261,15 @@ if __name__ == "__main__":
     batch_size = 60
     hidden_size = 128
     bi = True
-    model_name='model/chinese-roberta-wwm-ext'#bert_base_chinese
-    #pip install -U huggingface_hub   huggingface-cli download --repo-type dataset --resume-download wikitext --local-dir wikitext
-    tokenizer = BertTokenizer.from_pretrained(model_name)
+    model_name="hfl/chinese-roberta-wwm-ext"#bert_base_chinese
+    #pip install -U huggingface_hub   huggingface-cli download --resume-download hfl/chinese-roberta-wwm-ext --local-dir ./
+    tokenizer = BertTokenizer.from_pretrained(model_name,cache_dir='./')
     lr =1e-5
     is_train=True
 
     device = torch.device('cuda:0') if torch.cuda.is_available()   else torch.device('cpu')
 
-    train_dataset = Nerdataset(train_text,train_label,tokenizer,max_len,tag2idx,enhance_data=False)
+    train_dataset = Nerdataset(train_text,train_label,tokenizer,max_len,tag2idx)
     train_dataloader = DataLoader(train_dataset,batch_size=batch_size,shuffle=True)
 
     dev_dataset = Nerdataset(dev_text, dev_label, tokenizer, max_len, tag2idx,is_dev=True)
@@ -357,7 +310,7 @@ if __name__ == "__main__":
             if f1>bestf1:
                 bestf1 = f1
                 print(f'e={e},loss={loss_sum / ba:.5f} f1={f1:.5f} ---------------------->best')
-                torch.save(model.state_dict(),f'model/{cache_model}.pt')
+                torch.save(model.state_dict(),f'{cache_model}.pt')
             else:print(f'e={e},loss={loss_sum/ba:.5f} f1={f1:.5f}')
 
     rule = rule_find()
