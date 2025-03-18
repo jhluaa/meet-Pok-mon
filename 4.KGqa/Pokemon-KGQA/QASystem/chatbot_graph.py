@@ -33,4 +33,4 @@ if __name__ == "__main__":
         answer = handler.chat_main(question)
         print("图图:", answer)
 
-#{'args': {'小火龙': ['Pokémon']}, 'question_types': ['Pokemon_info', 'Pokemon_evolves']}
+

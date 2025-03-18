@@ -81,6 +81,20 @@ def extract_pokemon_relation(input_file, output_file):
 
 
 
-extract_pokemon_relation("../raw_data/region.json", "has_celebrity.txt")
+# extract_pokemon_relation("../raw_data/region.json", "has_celebrity.txt")
 
 
+def extract_person_pokemon(input_file, output_file):
+    # 读取 JSON 文件
+    with open(input_file, "r", encoding="utf-8") as file:
+        data = json.load(file)
+
+    # 提取关系并保存到 TXT 文件
+    with open(output_file, "w", encoding="utf-8") as output_file:
+        for person, info in data.items():
+            chinese_name = info["chinese_name"]
+            pokemon_list = info["pokemon"]
+            for pokemon in pokemon_list:
+                # 写入关系：人物, 宝可梦, 拥有
+                output_file.write(f"{chinese_name},{pokemon},拥有\n")
+extract_person_pokemon("raw_data/character.json","out.txt")

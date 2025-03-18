@@ -15,7 +15,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 cache_model = 'best_roberta'
 
-base_dir = r"/data/KGqa/Pokemon-KGQA/"
+base_dir = r"F:\bigmodel\meet-Pok-mon\4.KGqa\Pokemon-KGQA"
+model_base_path = "F:/bigmodel/models/"  # 模型和权重的基础路径
 def get_data(path,max_len=None):
     all_text,all_tag = [],[]
     with open(path,'r',encoding='utf8') as f:
@@ -48,11 +49,12 @@ class rule_find:
                 all_en = f.read().split('\n')
             for en in all_en:
                 en = en.split(' ')[0]
-                if len(en)>=2:
+                if len(en)>=1:
                     self.ahos[type2idx[type]].add_word(en,en)
         for i in range(len(self.ahos)):
             self.ahos[i].make_automaton()
 
+    #sen -> (start,end,cls,word)
     def find(self,sen):
         rule_result = []
         mp = {}
@@ -64,21 +66,33 @@ class rule_find:
             for j in range(len(now)):
                 all_ty.append(self.idx2type[i])
         if len(all_res) != 0:
-            all_res = sorted(all_res, key=lambda x: len(x[1]), reverse=True)
-            for i,res in enumerate(all_res):
+            combined = list(zip(all_res, all_ty))
+            # 按实体长度从长到短排序
+            combined.sort(key=lambda x: len(x[0][1]), reverse=True)
+
+            # 清空 all_res 和 all_ty，重新填充排序后的结果
+            all_res = [res for res, ty in combined]
+            all_ty = [ty for res, ty in combined]
+
+            # 遍历排序后的匹配结果
+            for i, res in enumerate(all_res):
+                # 计算实体的起始位置和结束位置
                 be = res[0] - len(res[1]) + 1
                 ed = res[0]
+                # 如果起始位置或结束位置已被占用，跳过当前实体
                 if be in mp or ed in mp:
                     continue
+                # 将匹配到的实体信息添加到 rule_result
                 rule_result.append((be, ed, all_ty[i], res[1]))
+                # 记录当前实体占用的字符位置
                 for t in range(be, ed + 1):
                     mp[t] = 1
         return rule_result
 
 
-#找出tag(label)中的所有实体及其下表，为实体动态替换/随机掩码策略/实体动态拼接做准备
+#由模型输出的tag(B-identity)转换为(start,end,cls)
 def find_entities(tag):
-    result = []#[(2,3,'药品'),(7,10,'药品商')]
+    result = []#[(2,3,'Person'),(7,10,'Indentity')]
     label_len = len(tag)
     i = 0
     while(i<label_len):
@@ -94,6 +108,12 @@ def find_entities(tag):
     return result
 
 class tfidf_alignment:
+    """
+    以Pokemon这个实体为例，该实体列表中一共出现6个字符，每个实体对应一个6维向量
+    ['皮卡丘','耿鬼','雷丘']
+    --->
+    [[x,x,x,x,x,x],[x,x,x,x,x,x],[x,x,x,x,x,x]]
+    """
     def __init__(self):
         eneities_path = os.path.join(base_dir, 'entity_data/')
         files = os.listdir(eneities_path)
@@ -140,7 +160,7 @@ class tfidf_alignment:
             max_score = sim_score[0, max_idx]
 
             # 如果相似度大于阈值 0.5，就认为匹配
-            if max_score >= 0.5:
+            if max_score >= 0.3:
                 new_result[cls] = self.tag_2_entity[cls][max_idx]
 
         return new_result
@@ -210,6 +230,7 @@ def merge(model_result_word,rule_result):
     result = model_result_word+rule_result
     result = sorted(result,key=lambda x:len(x[-1]),reverse=True)
     check_result = []
+    #去除重叠的实体
     mp = {}
     for res in result:
         if res[0] in mp or res[1] in mp:
@@ -225,23 +246,24 @@ def get_ner_result(model,tokenizer,sen,rule,tfidf_r,device,idx2tag):
     pre = model(sen_to).tolist()
 
     pre_tag = [idx2tag[i] for i in pre[1:-1]]
-    model_result = find_entities(pre_tag)
-    model_result_word = []
+    model_result = find_entities(pre_tag) #(start,end,cls)
+    model_result_word = [] #[(start,end,cls,word), ...]
     for res in model_result:
         word = sen[res[0]:res[1] + 1]
         model_result_word.append((res[0], res[1], res[2], word))
-    rule_result = rule.find(sen)
+    rule_result = rule.find(sen) #[(start,end,cls,word), ...]
 
     merge_result = merge(model_result_word, rule_result)
+    tfidf_result = tfidf_r.align(merge_result)
+    
     # print('模型结果',model_result_word)
     # print('规则结果',rule_result)
-    tfidf_result = tfidf_r.align(merge_result)
-    #print('整合结果', merge_result)
-    #print('tfidf对齐结果', tfidf_result)
+    # print('整合结果', merge_result)
+    # print('tfidf对齐结果', tfidf_result)
     return tfidf_result
 
 if __name__ == "__main__":
-    all_text,all_label = get_data(os.path.join(base_dir,'entity_data/','ner_data_aug.txt'))
+    all_text,all_label = get_data(os.path.join(base_dir,'NER/','ner_data_aug.txt'))
     train_text, dev_text, train_label, dev_label = train_test_split(all_text, all_label, test_size = 0.02, random_state = 42)
 
     #加载太慢了，预处理一下
@@ -261,11 +283,11 @@ if __name__ == "__main__":
     batch_size = 60
     hidden_size = 128
     bi = True
-    model_name="hfl/chinese-roberta-wwm-ext"#bert_base_chinese
+    model_name = os.path.join(model_base_path, "chinese-roberta-wwm-ext")  # 修改为你实际存储模型的位置
     #pip install -U huggingface_hub   huggingface-cli download --resume-download hfl/chinese-roberta-wwm-ext --local-dir ./
-    tokenizer = BertTokenizer.from_pretrained(model_name,cache_dir='./')
+    tokenizer = BertTokenizer.from_pretrained(model_name,cache_dir=model_base_path)
     lr =1e-5
-    is_train=True
+    is_train=False
 
     device = torch.device('cuda:0') if torch.cuda.is_available()   else torch.device('cpu')
 
@@ -276,8 +298,15 @@ if __name__ == "__main__":
     dev_dataloader = DataLoader(dev_dataset, batch_size=1, shuffle=False)
 
     model = Bert_Model(model_name,hidden_size,len(tag2idx),bi)
-    # if os.path.exists(f'model/best_roberta_gru_model_ent_aug.pt'):
-    #     model.load_state_dict(torch.load('model/best_roberta_gru_model_ent_aug.pt'))
+    
+    # 尝试加载已存在的模型权重
+    pt_path = os.path.join(model_name, "best_roberta.pt")
+    if os.path.exists(pt_path):
+        print("加载已有模型")
+        model.load_state_dict(torch.load(pt_path, map_location=device))
+    else:
+        is_train = True  # 如果没有找到模型，则需要进行训练
+        
     model = model.to(device)
     opt = torch.optim.Adam(model.parameters(),lr = lr)
     bestf1 = -1

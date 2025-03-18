@@ -54,12 +54,12 @@ def append_relationship_type_to_json(input_file, output_file, start_entity_type,
 
 
 append_relationship_type_to_json(
-    "relations_data/come_from.txt",
+    "relations_data/has_pokemon.txt",
     "data/relations.json",
     start_entity_type="Person",
-    end_entity_type="Region",
-    rel_type="come_from",
-    rel_name="来自"
+    end_entity_type="Pokémon",
+    rel_type="has_pokemon",
+    rel_name="拥有"
 )
 
 

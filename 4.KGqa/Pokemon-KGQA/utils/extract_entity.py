@@ -51,6 +51,6 @@ def extract_property_values_to_txt(input_file, output_file, property_name):
 # extract_person_names_from_json("region.json", "../en_data/Town.txt")
 
 # 调用函数，指定 JSON 文件路径、输出文件路径和要提取的属性名
-extract_property_values_to_txt("../en_data/pokemondetail.json", "identity.txt", "type")
+extract_property_values_to_txt("character.json", "1.txt", "region")
 
 

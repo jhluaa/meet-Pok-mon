@@ -27,7 +27,7 @@ def append_txt_to_json(input_file, output_file, label="Person"):
 
     print(f"{label} 实体已追加到 {output_file} 文件中。")
 
-append_txt_to_json("../en_data/identity.txt", "../data/entity.json", label="identity")
+# append_txt_to_json("../en_data/identity.txt", "../data/entity.json", label="identity")
 
 
 ##############################################################################
@@ -112,6 +112,6 @@ def convert_and_append_person(input_file, entity_file):
 
     print(f"人物数据已成功追加到 {entity_file} 文件中。")
 
-# convert_and_append_person("../raw_data/character.json", "entity.json")
+append_txt_to_json("entity_data/Region.txt", "data/entities.json", label="Region")
 
 

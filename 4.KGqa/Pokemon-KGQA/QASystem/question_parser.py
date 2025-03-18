@@ -3,98 +3,21 @@
 
 class QuestionPaser:
     """
-    构建实体节点
+    res_classify = {'args': {'person': '小智'}, 'question_types': ['查询人物拥有哪些宝可梦']}
     """
-
-    def build_entitydict(self, args):
-        entity_dict = {}
-        for arg, types in args.items():
-            for type in types:
-                if type not in entity_dict:
-                    entity_dict[type] = [arg]
-                else:
-                    entity_dict[type].append(arg)
-        return entity_dict
 
     def parser_main(self, res_classify):
         args = res_classify["args"]
-        entity_dict = self.build_entitydict(args)
+        question_types = res_classify["question_types"] 
 
-        # 打印实体字典，确认构建是否正确
-        # print("Entity Dictionary:", entity_dict)  #Entity Dictionary: {'person': ['赤红']}
-        # exit()
-        question_types = res_classify["question_types"] #['person_ino', 'person_pokemon']
+        if(len(question_types) > 1):
+            return "请勿一次性输入多个问题！"
+        if(len(question_types) == 0 or question_types[0] == '未匹配'):
+            return "未匹配！"
+        
+        question_type = question_types[0]
+        return self.sql_transfer(question_type, args)
 
-        sqls = []
-        for question_type in question_types:
-            sql_ = {}
-            sql_["question_type"] = question_type
-            sql = []
-            # 根据问题类型选择相应的实体类型
-
-            if question_type == "person_info":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "person_en_name":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "person_jp_name":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "person_gen":
-                sql = self.sql_transfer(question_type, entity_dict)
-
-            elif question_type == "Pokemon_info":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Pokemon_en_name":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Pokemon_jp_name":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Pokemon_ability":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Pokemon_height":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Pokemon_weight":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Pokemon_evolution":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type=="pokemon_person":
-                sql=self.sql_transfer(question_type, entity_dict)
-            elif question_type == "person_partner":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "person_hostility":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "person_relative":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "person_pokemon":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "person_town":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "person_region":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Pokemon_evolves":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Pokemon_qtype":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Pokemon_Region":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "identity_pokemon":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Town_celebrity":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Region_pokemon":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Town_Region":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "person_attr":
-                sql = self.sql_transfer(question_type, entity_dict)
-            elif question_type == "Pokémon_attr":
-                sql = self.sql_transfer(question_type, entity_dict)
-            # 打印查询语句，确认sql是否正确构建
-            # print(f"SQL for {question_type}:", sql)
-
-            if sql:
-                sql_["sql"] = sql
-                sqls.append(sql_)
-
-        return sqls
 
     def sql_transfer(self, question_type, entities):
         """
@@ -103,154 +26,123 @@ class QuestionPaser:
         if not entities:
             return []
 
-        keys = list(entities.keys())[0]  # 获取实体类型
-        entities = entities[keys]  # 获取具体实体名称列表
-        sql = []
+        pokemon = entities.get('Pokémon','')
+        person = entities.get('person','')
+        town = entities.get('Town','')
+        region = entities.get('Region','')
+        identity = entities.get('identity','')
+        
+         # 初始化查询语句
+        sql = ""
 
-        if keys == "Person":
-            if question_type == "person_info":
-                sql = [
-                    "MATCH (a:Person) WHERE a.name='{0}' RETURN  a.japanese_name, a.english_name, a.gender".format(
-                        i)
-                    for i in entities
-                ]
-            elif question_type == "person_en_name":
-                sql = [
-                    "MATCH (a:Person) WHERE a.name='{0}' RETURN a.english_name".format(i)
-                    for i in entities
-                ]
-            elif question_type == "person_jp_name":
-                sql = [
-                    "MATCH (a:Person) WHERE a.name='{0}' RETURN a.japanese_name".format(i)
-                    for i in entities
-                ]
-            elif question_type == "person_gen":
-                sql = [
-                    "MATCH (a:Person) WHERE a.name='{0}' RETURN a.gender".format(i)
-                    for i in entities
-                ]
-            elif question_type == "person_partner":
-                sql = [
-                    "MATCH (a:Person)-[:partner]-(b:Person) WHERE a.name='{0}' RETURN b.name".format(i)
-                    for i in entities
-                ]
-            elif question_type == "person_hostility":
-                sql = [
-                    "MATCH (a:Person)-[:hostility]-(b:Person) WHERE a.name='{0}' RETURN b.name".format(i)
-                    for i in entities
-                ]
-            elif question_type == "person_relative":
-                sql = [
-                    "MATCH (a:Person)-[:relative]-(b:Person) WHERE a.name='{0}' RETURN b.name".format(i)
-                    for i in entities
-                ]
-            elif question_type == "person_pokemon":
-                sql = [
-                    "MATCH (a:Person)-[:has_pokemon]-(b:Pokémon) WHERE a.name='{0}' RETURN b.name".format(i)
-                    for i in entities
-                ]
-            # elif question_type == "person_town":
-            #     sql = [
-            #         "MATCH (a:Person)-[:come_from]-(b:Town) WHERE a.name='{0}' RETURN b.name".format(i)
-            #         for i in entities
-            #     ]
-            elif question_type == "person_region":
-                sql = [
-                    "MATCH (a:Person)-[:come_from]-(b:Region) WHERE a.name='{0}' RETURN b.name".format(i)
-                    for i in entities
-                ]
+        # 根据问题类型生成查询
+        if question_type == "查询宝可梦中文名":
+            sql = f"MATCH (p:Pokémon) WHERE p.name = '{pokemon}' RETURN p.name AS chinese_name;"
 
-        elif keys == "Pokémon":
-            if question_type == "Pokemon_info":
-                sql = [
-                    "MATCH (a:Pokémon) WHERE a.name='{0}' RETURN a".format(i)
-                    for i in entities
-                ]
-            elif question_type == "Pokemon_en_name":
-                sql = [
-                    "MATCH (a:Pokémon) WHERE a.name='{0}' RETURN a.english_name".format(i)
-                    for i in entities
-                ]
-            elif question_type == "Pokemon_jp_name":
-                sql = [
-                    "MATCH (a:Pokémon) WHERE a.name='{0}' RETURN a.japanese_name".format(i)
-                    for i in entities
-                ]
-            elif question_type == "Pokemon_ability":
-                sql = [
-                    "MATCH (a:Pokémon) WHERE a.name='{0}' RETURN a.ability,a.hidden_ability,a.attr_ability".format(i)
-                    for i in entities
-                ]
-            elif question_type == "Pokemon_height":
-                sql = [
-                    "MATCH (a:Pokémon) WHERE a.name='{0}' RETURN a.height".format(i)
-                    for i in entities
-                ]
-            elif question_type == "Pokemon_weight":
-                sql = [
-                    "MATCH (a:Pokémon) WHERE a.name='{0}' RETURN a.weight".format(i)
-                    for i in entities
-                ]
-            elif question_type == "Pokemon_evolution":
-                sql = [
-                    "MATCH (a:Pokémon) WHERE a.name='{0}' RETURN a.evolution_level".format(i)
-                    for i in entities
-                ]
-            elif question_type == "Pokemon_qtype":
-                sql = [
-                    "MATCH (a:Pokémon)-[:has_type]-(b:Type) WHERE a.name='{0}' RETURN b.name".format(i)
-                    for i in entities
-                ]
-            elif question_type == "Pokemon_evolves":
-                sql = [
-                    "MATCH (a:Pokémon)-[:evolves_into]-(b:Pokémon) WHERE a.name='{0}' RETURN b.name".format(i)
-                    for i in entities
-                ]
+        elif question_type == "查询宝可梦英文名":
+            sql = f"MATCH (p:Pokémon) WHERE p.name = '{pokemon}' RETURN p.english_name AS english_name;"
 
-            elif question_type == "Pokemon_Region":
-                sql = [
-                    "MATCH (a:Pokémon)-[:location_pokemon]-(b:Region) WHERE a.name='{0}' RETURN b.name".format(i)
-                    for i in entities
-                ]
+        elif question_type == "查询宝可梦特性":
+            sql = f"MATCH (p:Pokémon) WHERE p.name = '{pokemon}' RETURN p.ability AS ability;"
 
-        elif keys == "identity":
-            if question_type == "identity_pokemon":
-                sql = [
-                    "MATCH (a:Pokémon) WHERE a.ability='{0}' RETURN a.name".format(i)
-                    for i in entities
-                ]
+        elif question_type == "查询宝可梦隐藏特性":
+            sql = f"MATCH (p:Pokémon) WHERE p.name = '{pokemon}' RETURN p.hidden_ability AS hidden_ability;"
 
-        elif keys == "Town":
-            if question_type == "Town_celebrity":
-                sql = [
-                    "MATCH (a:Town)-[:has_celebrity]-(b:Person) WHERE a.name='{0}' RETURN b.name".format(i)
-                    for i in entities
-                ]
-            elif question_type == "Town_Region":
-                sql = [
-                    "MATCH (a:Town)-[:located_in]-(b:Region) WHERE a.name='{0}' RETURN b.name".format(i)
-                    for i in entities
-                ]
+        elif question_type == "查询宝可梦身高":
+            sql = f"MATCH (p:Pokémon) WHERE p.name = '{pokemon}' RETURN p.height AS height;"
 
-        elif keys == "Region":
-            if question_type == "Region_pokemon":
-                sql = [
-                    "MATCH (a:Region)-[:location_pokemon]-(b:Pokémon) WHERE a.name='{0}' RETURN b.name".format(i)
-                    for i in entities
-                ]
+        elif question_type == "查询宝可梦体重":
+            sql = f"MATCH (p:Pokémon) WHERE p.name = '{pokemon}' RETURN p.weight AS weight;"
 
+        elif question_type == "查询宝可梦进化等级":
+            sql = f"MATCH (p:Pokémon) WHERE p.name = '{pokemon}' RETURN p.evolution_level AS evolution_level;"
+
+        elif question_type == "查询宝可梦属性抗性":
+            sql = f"MATCH (p:Pokémon) WHERE p.name = '{pokemon}' RETURN p.attr_ability AS attr_ability;"
+
+        elif question_type == "查询宝可梦进化形态":
+            sql = f"MATCH (p1:Pokémon)-[:evolves_into]->(p2:Pokémon) WHERE p1.name = '{pokemon}' RETURN p2.name AS evolution_name;"
+
+        elif question_type == "查询宝可梦属性":
+            sql = f"MATCH (p:Pokémon)-[:has_type]->(i:identity) WHERE p.name = '{pokemon}' RETURN i.name AS identity_name;"
+
+        elif question_type == "查询人物性别":
+            sql = f"MATCH (per:Person) WHERE per.name = '{person}' RETURN per.gender AS gender;"
+
+        elif question_type == "查询人物英文名":
+            sql = f"MATCH (per:Person) WHERE per.name = '{person}' RETURN per.english_name AS english_name;"
+
+        elif question_type == "查询人物日本名":
+            sql = f"MATCH (per:Person) WHERE per.name = '{person}' RETURN per.japanese_name AS japanese_name;"
+
+        elif question_type == "查询人物的挑战者":
+            sql = f"MATCH (per1:Person)-[:challenge]->(per2:Person) WHERE per1.name = '{person}' RETURN per2.name AS challenger_name;"
+
+        elif question_type == "查询人物的伙伴":
+            sql = f"MATCH (per1:Person)-[:partner]->(per2:Person) WHERE per1.name = '{person}' RETURN per2.name AS partner_name;"
+
+        elif question_type == "查询人物的敌对者":
+            sql = f"MATCH (per1:Person)-[:hostility]->(per2:Person) WHERE per1.name = '{person}' RETURN per2.name AS hostility_name;"
+
+        elif question_type == "查询人物的亲戚":
+            sql = f"MATCH (per1:Person)-[:relative]->(per2:Person) WHERE per1.name = '{person}' RETURN per2.name AS relative_name;"
+
+        elif question_type == "查询某个属性的宝可梦有哪些":
+            sql = f"MATCH (p:Pokémon)-[:has_type]->(i:identity) WHERE i.name = '{identity}' RETURN p.name AS pokemon_name;"
+
+        elif question_type == "查询城镇位于的地区":
+            sql = f"MATCH (t:Town)-[:located_in]->(r:Region) WHERE t.name = '{town}' RETURN r.name AS region_name;"
+
+        elif question_type == "查询地区的城镇有哪些":
+            sql = f"MATCH (r:Region)<-[:located_in]-(t:Town) WHERE r.name = '{region}' RETURN t.name AS town_name;"
+
+        elif question_type == "查询人物来自哪个地区":
+            sql = f"MATCH (per:Person)-[:come_from]->(r:Region) WHERE per.name = '{person}' RETURN r.name AS region_name;"
+
+        elif question_type == "查询地区有哪些人物":
+            sql = f"MATCH (per:Person)-[:come_from]->(r:Region) WHERE r.name = '{region}' RETURN per.name AS person_name;"
+
+        elif question_type == "查询人物拥有哪些宝可梦":
+            sql = f"MATCH (per:Person)-[:has_pokemon]->(p:Pokémon) WHERE per.name = '{person}' RETURN p.name AS pokemon_name;"
+
+        elif question_type == "查询拥有某个宝可梦的人物有哪些":
+            sql = f"MATCH (per:Person)-[:has_pokemon]->(p:Pokémon) WHERE p.name = '{pokemon}' RETURN per.name AS person_name;"
+
+        elif question_type == "查询城镇有哪些宝可梦":
+            sql = f"MATCH (t:Town)-[:location_pokemon]->(p:Pokémon) WHERE t.name = '{town}' RETURN p.name AS pokemon_name;"
+
+        elif question_type == "查询哪些城镇有某个宝可梦":
+            sql = f"MATCH (t:Town)-[:location_pokemon]->(p:Pokémon) WHERE p.name = '{pokemon}' RETURN t.name AS town_name;"
+
+        elif question_type == "查询城镇有哪些人物":
+            sql = f"MATCH (t:Town)-[:has_celebrity]->(per:Person) WHERE t.name = '{town}' RETURN per.name AS person_name;"
+
+        elif question_type == "查询人物来自哪个城镇":
+            sql = f"MATCH (per:Person)-[:come_from]->(t:Town) WHERE per.name = '{person}' RETURN t.name AS town_name;"
+
+        elif question_type == "查询某个地区有多少城镇":
+            sql = f"MATCH (r:Region)<-[:located_in]-(t:Town) WHERE r.name = '{region}' RETURN COUNT(t) AS town_count;"
+
+        elif question_type == "查询某个城镇有多少宝可梦":
+            sql = f"MATCH (t:Town)-[:location_pokemon]->(p:Pokémon) WHERE t.name = '{town}' RETURN COUNT(p) AS pokemon_count;"
+
+        elif question_type == "查询人物拥有多少宝可梦":
+            sql = f"MATCH (per:Person)-[:has_pokemon]->(p:Pokémon) WHERE per.name = '{person}' RETURN COUNT(p) AS pokemon_count;"
+
+        elif question_type == "查询宝可梦有多少种属性":
+            sql = f"MATCH (p:Pokémon)-[:has_type]->(i:identity) WHERE p.name = '{pokemon}' RETURN COUNT(i) AS identity_count;"
+
+        else:
+            sql = "未匹配！"
+
+        print(sql)
         return sql
-
 
 if __name__ == "__main__":
     handler = QuestionPaser()
 
     # 模拟一个res_classify字典作为输入
-    res_classify = {
-        # 'args': {'赤红': ['Person']}, 'question_types': ['person_info', 'person_partner']
-        # 'args': {'皮卡丘': ['Pokemon']}, 'question_types': ['Pokemon_info']
-        'args': {'皮卡丘': ['Pokémon']}, 'question_types': ['Pokemon_info', 'Pokemon_evolves']
-    }
+    res_classify = {'args': {'person': '小智'}, 'question_types': ['查询人物拥有哪些宝可梦']}
 
-    sqls = handler.parser_main(res_classify)
-    print("Generated SQLs:", sqls)
+    sql = handler.parser_main(res_classify)
+    print("Generated SQL:", sql)

@@ -6,7 +6,7 @@ import re
 from tqdm import tqdm
 import sys
 
-base_dir = r"D:/meet-Pok-mon/4.KGqa/Pokemon-KGQA/"
+base_dir = r"F:\bigmodel\meet-Pok-mon\4.KGqa\Pokemon-KGQA"
 class Build_Ner_data():
     def __init__(self):
         self.idx2type=idx2type = ["identity","person","Pokémon","Region","Town"]
@@ -114,7 +114,7 @@ def load_book_text(file_path):
 
 
 if __name__ == "__main__":
-    book_path = r"D:\meet-Pok-mon\4.KGqa\Pokemon-KGQA\raw_data\book.txt"  # 假设书籍存放在 data/book.txt
+    book_path = r"F:\bigmodel\meet-Pok-mon\4.KGqa\Pokemon-KGQA\raw_data\book.txt"  # 假设书籍存放在 data/book.txt
     paragraphs = load_book_text(book_path)
 
     build_ner_data = Build_Ner_data()
