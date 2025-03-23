@@ -112,7 +112,7 @@ def process_pokemon_data(input_file, output_file):
 
 
 if __name__ == "__main__":
-    # 示例用法
+
     process_pokemon_data(
         input_file=r"../split_10.json",  # 原始数据文件 2
         output_file="pokemon_data_10.json",  # 输出文件1  2

@@ -22,7 +22,7 @@ for i, entry in enumerate(data):
         print(f"⚠️ 第 {i+1} 条数据缺少 'history' 或格式错误")
         entry["history"] = []  # 填充默认值
 
-# 你可以选择将修正后的数据写回文件
+#  将修正后的数据写回文件
 with open("../clean_dataset/pokemon_data_10.json", "w", encoding="utf-8") as f:
     json.dump(data, f, ensure_ascii=False, indent=4)
 

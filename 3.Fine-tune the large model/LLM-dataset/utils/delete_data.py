@@ -39,5 +39,4 @@ def remove_first_n_entries(json_file, n):
         print(f"❌ 发生错误：{e}")
 
 
-# 示例用法：删除 JSON 文件 "data.json" 中的前 5 条数据
 remove_first_n_entries("../split_3.json", 321)

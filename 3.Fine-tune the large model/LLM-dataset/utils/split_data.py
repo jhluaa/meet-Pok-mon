@@ -23,7 +23,6 @@ def split_json(input_file, num_splits, output_dir):
 
         print(f"生成文件: {output_file}, 数据条数: {len(split_data)}")
 
-# 示例调用
 if __name__ == "__main__":
     input_json_file = '../final_merged_data.json'  # 输入的json文件路径
     output_directory = 'splits'    # 输出目录
