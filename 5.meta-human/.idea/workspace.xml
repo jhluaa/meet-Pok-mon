@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="882cf365-a345-4e54-a62f-060639f07ead" name="更改" comment="" />
+    <list default="true" id="882cf365-a345-4e54-a62f-060639f07ead" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/ASR/gen_filelist.py" beforeDir="false" afterPath="$PROJECT_DIR$/ASR/make_ASR_dataset/gen_filelist.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ASR/makeASR_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/ASR/make_ASR_dataset/makeASR_dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ASR/video2wav.py" beforeDir="false" afterPath="$PROJECT_DIR$/ASR/make_ASR_dataset/video2wav.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -92,7 +96,7 @@
       <updated>1742908195573</updated>
       <workItem from="1742908196741" duration="298000" />
       <workItem from="1742908541048" duration="2097000" />
-      <workItem from="1742911658438" duration="299000" />
+      <workItem from="1742911658438" duration="655000" />
     </task>
     <servers />
   </component>
