@@ -15,6 +15,7 @@
 - 2025-3-13  数据处理+ ner 实 2025-3-13  数据处理+ ner 实体训练
 - 2025-3-23  制作微调及COT数据集、训练deepseek、qwen2.5
 - 2025-3-24  导出 R1 ，deepseek ,qwen2.5
+- 2025-3-25 部署lightrag、whisper 接口调用 
 
 
 
