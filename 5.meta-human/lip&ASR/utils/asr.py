@@ -7,17 +7,13 @@ import json
 import time
 import ssl
 
-from utils import  server
-from  utils.Thread import MyThreadFunc
-
-
-
-
+from utils import server
+from utils.Thread import MyThreadFunc
 
 class FunASR:
     # 初始化
     os.environ["LOCAL_ASR_IP"] = "127.0.0.1"
-    os.environ["LOCAL_ASR_PORT"] = "10095"
+    os.environ["LOCAL_ASR_PORT"] = "10096"
 
     def __init__(self):
         # 构建 ws:// 或 wss:// 连接地址
@@ -38,37 +34,29 @@ class FunASR:
         # 多线程控制
         self.on_start_thread = None
 
-        # 你可以在这里修改默认识别模式
-        # 例如 offline/online/2pass
+        # 你可以在这里修改默认识别模式: offline / online / 2pass
         self.default_mode = "2pass"
 
-    # def on_message(self, ws, message):
-    #     """
-    #     收到服务器返回的识别结果。
-    #     官方协议中，服务器返回的 JSON 形如:
-    #       {"mode":"2pass-online","wav_name":"mic","text":"你好","is_final":false,...}
-    #       或  {"mode":"2pass-offline","text":"你好啊","is_final":true,...}
-    #     你可以在这里解析并做自定义处理
-    #     """
-    #     print("on_message:", message)
-    #     self.finalResults = message
-    #     self.done = True
-    #
-    #     if self.__closing:
-    #         try:
-    #             self.__ws.close()
-    #         except Exception as e:
-    #             print(e)
-    import json
-
     def on_message(self, ws, message):
+        """
+        只在最终结果时打印识别的完整句子
+        对 2pass 模式而言，一般会有一条 "2pass-offline" + is_final=true 的消息
+        """
         try:
-            # 先解析 JSON
             data = json.loads(message)
-            # 获取 text 字段
             text = data.get("text", "")
-            # 只打印 text
-            print("on_message text:", text)
+            mode_val = data.get("mode", "")
+            is_final = data.get("is_final", False)
+
+            # 你也可以先行调试：print("Debug Received:", data)
+            # 如果发现在实际环境中并没有 is_final=true，则需要根据具体返回再改写
+
+            # 判断：只有在 "2pass-offline" + is_final=true 时才算最终结果
+            if mode_val.endswith("-offline") and is_final:
+                print("[FunASR] Final recognized text:", text)
+                self.finalResults = text
+                self.done = True
+
         except Exception as e:
             print("on_message error:", e)
 
@@ -142,16 +130,15 @@ class FunASR:
                 return
 
             # (1) 发送首次通信 JSON
-            # 官方示例: {"mode":"2pass","wav_name":"xxx","is_speaking":True,"wav_format":"pcm","chunk_size":[5,10,5],...}
             init_msg = {
                 "mode": self.default_mode,   # "2pass", "online", or "offline"
                 "wav_name": wav_name,
-                "wav_format": "pcm",         # 你录音时就是PCM
+                "wav_format": "pcm",
                 "is_speaking": True,
-                "chunk_size": [5,10,5],      # 如果是2pass, chunk_size = [5,10,5]
-                "audio_fs": 16000,           # 你的录音采样率
-                "hotwords": "",              # 如果有热词,例如 '{"阿里巴巴":20}'
-                "itn": True                  # 是否使用ITN
+                "chunk_size": [5, 10, 5],    # 若是 2pass，可用 [5,10,5]
+                "audio_fs": 16000,
+                "hotwords": "",
+                "itn": True
             }
             self.__ws.send(json.dumps(init_msg))
 
@@ -159,11 +146,10 @@ class FunASR:
             self.__ws.send(audio_byte_array, opcode=websocket.ABNF.OPCODE_BINARY)
 
             # (3) 发送结束标志
-            # 官方示例: {"is_speaking": false}
             stop_msg = {"is_speaking": False}
             self.__ws.send(json.dumps(stop_msg))
 
-            # 等待服务器返回最终结果
+            # 等待服务器返回最终结果 (视实际情况可调整)
             time.sleep(1.0)
 
         except Exception as e:
