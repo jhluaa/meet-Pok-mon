@@ -16,6 +16,7 @@
 - 2025-3-23  制作微调及COT数据集、训练deepseek、qwen2.5
 - 2025-3-24  导出 R1 ，deepseek ,qwen2.5
 - 2025-3-25 部署lightrag、whisper 接口调用 
+- 2025-3-26 增加网络搜索、ocr识别插件
 
 
 
