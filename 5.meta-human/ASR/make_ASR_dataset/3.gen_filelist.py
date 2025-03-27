@@ -1,13 +1,13 @@
 import os
 import chardet
 
-# 📌 1️⃣ 检测文件编码
+# 📌 1️⃣检测文件编码
 def detect_encoding(file_path):
     with open(file_path, "rb") as f:
         result = chardet.detect(f.read())
         return result["encoding"]
 
-# 📌 2️⃣ 将 `.lab` 文件转换为 UTF-8
+# 📌 2️⃣ 将.lab文件转换为 UTF-8
 def convert_to_utf8(file_path):
     encoding = detect_encoding(file_path)
     if encoding and encoding.lower() != 'utf-8':  # 如果不是 UTF-8，则转换
@@ -38,10 +38,10 @@ def process():
                 if f.endswith(".lab"):
                     file_path = os.path.join(path, f)
 
-                    # 🚀 确保所有 `.lab` 文件都是 UTF-8
+                    # 🚀 确保所有.lab文件都是 UTF-8
                     convert_to_utf8(file_path)
 
-                    # 🚀 读取 `.lab` 内容
+                    # 🚀 读取.lab内容
                     with open(file_path, 'r', encoding="utf-8", errors="ignore") as perFile:
                         line = perFile.readline().strip()
                         result = f"./data/short/{person}/{f.split('.')[0]}.wav|{person}|{ch_language}|{line}"
