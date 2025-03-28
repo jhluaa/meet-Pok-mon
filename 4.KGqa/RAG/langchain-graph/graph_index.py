@@ -102,7 +102,7 @@ def sanitize_graph(graph: nx.Graph) -> nx.Graph:
     return sanitized_graph
 
 
-
+# 生成图谱
 graph_generator = GraphGenerator(
     er_extractor=EntityRelationshipExtractor.build_default(llm=llm),
     graphs_merger=GraphsMerger(),
@@ -134,10 +134,15 @@ entities_vector_store = ChromaVectorStore(
     ),
 )
 
-
+# 实体报告
 entities_artifacts_generator = EntitiesArtifactsGenerator(
     entities_vector_store=entities_vector_store
 )
+df_entities = entities_artifacts_generator.run(
+    community_detection_result,
+    summarized_graph,
+)
+#关系报告
 relationships_artifacts_generator = RelationshipsArtifactsGenerator()
 df_relationships = relationships_artifacts_generator.run(summarized_graph)
 text_units_artifacts_generator = TextUnitsArtifactsGenerator()
@@ -152,6 +157,11 @@ report_writer = CommunityReportWriter()
 communities_report_artifacts_generator = CommunitiesReportsArtifactsGenerator(
     report_generator=report_generator,
     report_writer=report_writer,
+)
+
+df_communities_reports = communities_report_artifacts_generator.run(
+    community_detection_result,
+    summarized_graph,
 )
 
 # %%
