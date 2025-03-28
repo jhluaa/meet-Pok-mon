@@ -1,42 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="8fb2dd68-e5b2-4b60-9db3-8cd566aaf519" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/../1.Pokémon spider/.idea/1.Pokémon spider.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../1.Pokémon spider/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../1.Pokémon spider/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../1.Pokémon spider/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../1.Pokémon spider/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../1.Pokémon spider/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../1.Pokémon spider/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../1.Pokémon spider/templates.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../3.Fine-tune the large model/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../3.Fine-tune the large model/.idea/3.Fine-tune the large model.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../3.Fine-tune the large model/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../3.Fine-tune the large model/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../3.Fine-tune the large model/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../3.Fine-tune the large model/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/4.KGqa.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../5.meta-human/.idea/5.meta-human.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../5.meta-human/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../5.meta-human/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../5.meta-human/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../5.meta-human/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../5.meta-human/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../5.meta-human/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../6.Computer Vision/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../6.Computer Vision/.idea/6.Computer Vision.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../6.Computer Vision/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../6.Computer Vision/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../6.Computer Vision/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../6.Computer Vision/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../6.Computer Vision/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,9 +17,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 8
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
   <component name="ProjectId" id="2urFbOfArAAN9NkiOpV6UpEg9em" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -59,9 +30,11 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "F:/meet-Pok-mon/4.KGqa/plugin",
+    "last_opened_file_path": "F:/meet-Pok-mon/4.KGqa",
     "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
@@ -83,6 +56,7 @@
       <option name="presentableId" value="Default" />
       <updated>1742998856537</updated>
       <workItem from="1742998857678" duration="20000" />
+      <workItem from="1743171274011" duration="640000" />
     </task>
     <servers />
   </component>
