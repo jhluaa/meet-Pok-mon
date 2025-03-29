@@ -4,23 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="83fab0a0-3625-4b4d-abd8-00b839e8177d" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/entity_data/Pokémon.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/entity_data/Region.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/entity_data/Town.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/entity_data/identity.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/entity_data/person.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gen_entity2id.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../4.KGqa/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../4.KGqa/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/8.Graph Neural Networks.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-    </list>
+    <list default="true" id="83fab0a0-3625-4b4d-abd8-00b839e8177d" name="更改" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -144,7 +128,7 @@
       <workItem from="1743227400669" duration="405000" />
       <workItem from="1743227830189" duration="16000" />
       <workItem from="1743227860088" duration="3000" />
-      <workItem from="1743227875178" duration="3727000" />
+      <workItem from="1743227875178" duration="3788000" />
     </task>
     <servers />
   </component>

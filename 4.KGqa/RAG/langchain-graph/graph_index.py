@@ -41,8 +41,8 @@ def pdf_to_doc(pdf_path):
     return doc
 
 
-doc1 = pdf_to_doc('./海龟交易法则_130-135.pdf')
-doc2 = pdf_to_doc('./海龟交易法则_136-142.pdf')
+doc1 = pdf_to_doc('test.pdf')
+doc2 = pdf_to_doc('test1.pdf')
 
 # 递归地将文本分割成块
 spliter = RecursiveCharacterTextSplitter(
