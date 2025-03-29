@@ -4,7 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="83fab0a0-3625-4b4d-abd8-00b839e8177d" name="更改" comment="" />
+    <list default="true" id="83fab0a0-3625-4b4d-abd8-00b839e8177d" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/../4.KGqa/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../4.KGqa/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/edge_dict.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/edge_list.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/entity2id.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/entity_type_map.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/relations.json" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -129,6 +138,8 @@
       <workItem from="1743227830189" duration="16000" />
       <workItem from="1743227860088" duration="3000" />
       <workItem from="1743227875178" duration="3788000" />
+      <workItem from="1743241162898" duration="52000" />
+      <workItem from="1743241279877" duration="54000" />
     </task>
     <servers />
   </component>

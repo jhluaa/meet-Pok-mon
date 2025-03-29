@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8fb2dd68-e5b2-4b60-9db3-8cd566aaf519" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="8fb2dd68-e5b2-4b60-9db3-8cd566aaf519" name="更改" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -49,6 +47,7 @@
       <recent name="F:\meet-Pok-mon\4.KGqa\RAG" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="F:\meet-Pok-mon\4.KGqa\server" />
       <recent name="F:\meet-Pok-mon\4.KGqa\RAG\data" />
     </key>
   </component>
@@ -74,6 +73,7 @@
       <workItem from="1743227806372" duration="23000" />
       <workItem from="1743227847252" duration="12000" />
       <workItem from="1743227863495" duration="11000" />
+      <workItem from="1743240737182" duration="424000" />
     </task>
     <servers />
   </component>
