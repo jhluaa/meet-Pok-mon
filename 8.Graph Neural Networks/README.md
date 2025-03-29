@@ -123,28 +123,18 @@ python build_edges_from_relations.py
 
 ---
 
-## 📊 后续任务
+## 📊 训练说明
 
-你现在可以根据生成的数据进行图神经网络建模：
+ 图神经网络建模：
 
-- 构建普通图（使用 PyG 的 `Data`）→ 训练 GCN、GraphSAGE
-- 构建异构图（使用 PyG 的 `HeteroData`）→ 训练 RGCN、HGT
+- 构建普通图（使用 PyG 的 `Data`）→ 训练 GCN、GraphSAGE ,GAT  **使用 GraphSAGE 作为图嵌入的最终结构**
+- 构建异构图（使用 PyG 的 `HeteroData`）→ 训练 RGCN、HGT 属性预测
 
-### 📌 推荐的后续脚本
-
-| 脚本名                     | 功能说明                                    |
-|----------------------------|---------------------------------------------|
-| `build_homogeneous_graph.py` | 构建普通图的 `Data` 数据结构                 |
-| `build_hetero_graph.py`      | 构建异构图的 `HeteroData` 数据结构          |
-| `train_gnn.py`               | 图神经网络模型训练脚本（如 GCN、RGCN）      |
-| `get_embedding.py`           | 获取某个实体的图结构向量（如“皮卡丘”的表示）|
-
----
 
 ## 🔍 GNN应用
 
 图神经网络生成的实体表示可以用于：
 
 - 多跳问答、知识推理、结构增强  
-- 结合大模型（如 ChatGLM、Qwen）实现语义问答或向量增强  
+- 结合大模型（ Qwen）实现语义问答或向量增强  
 - 实体推荐、实体分类、关系预测等下游任务
