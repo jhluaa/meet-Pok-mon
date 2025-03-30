@@ -34,7 +34,7 @@ class FunASR:
         # 多线程控制
         self.on_start_thread = None
 
-        # 你可以在这里修改默认识别模式: offline / online / 2pass
+        #  识别模式: offline / online / 2pass
         self.default_mode = "2pass"
 
     def on_message(self, ws, message):
