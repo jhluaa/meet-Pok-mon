@@ -160,8 +160,14 @@ class tfidf_alignment:
             max_score = sim_score[0, max_idx]
 
             # 如果相似度大于阈值 0.5，就认为匹配
-            if max_score >= 0.3:
-                new_result[cls] = self.tag_2_entity[cls][max_idx]
+            if max_score >= 0.7:
+                if cls not in new_result:
+                    new_result[cls] = []
+                new_result[cls].append(self.tag_2_entity[cls][max_idx])
+                
+        # 去重（如果需要）
+        for cls in new_result:
+            new_result[cls] = list(set(new_result[cls]))
 
         return new_result
 

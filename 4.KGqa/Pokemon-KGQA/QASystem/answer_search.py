@@ -19,6 +19,8 @@ class AnswerSearcher:
         
         answers = []
         ress = self.g.run(sql).data()
+        print("ress",ress)
+        
 
         if not ress:
             final_answers.append("未匹配！")
