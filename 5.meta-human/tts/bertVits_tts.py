@@ -196,7 +196,7 @@ if __name__ == "__main__":
     tts_url = os.environ.get("local_bert_vits2_url") or "http://localhost:23456/voice/bert-vits2?"
     tts = BertVITS2tts(tts_url)
     sample_text_long = """\
-今天天气非常好，适合外出游玩。
+今天天气非常好，适合外出游玩，
 可以试试看多句连续合成，这里多写几句话测试一下。
 BertVITS2 效果不错吧？
 """
