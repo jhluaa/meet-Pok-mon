@@ -203,7 +203,7 @@ BertVITS2 效果不错吧？
     print("========== [DEMO] 测试长文本多句合成 ==========")
     tts.generate_audio_for_long_text(sample_text_long, demo_audio_play_callback, start_index=1)
     # 测试：只合成第一句
-    sample_text_single = "你好，这是另外一段文本，用来演示只合成并播放第一句。剩余部分后续自行处理。"
+    sample_text_single = "你好，这是另外一段文本，用来演示只合成并播放第一句。"
     print("\n========== [DEMO] 测试只合成第一句 ==========")
     first_sentence, idx = tts.generate_audio_for_first_sentence(sample_text_single, demo_audio_play_callback, 0)
     print("[INFO] 被抽取出来的第一句:", first_sentence)

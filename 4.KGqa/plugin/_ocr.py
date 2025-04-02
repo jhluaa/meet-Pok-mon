@@ -3,7 +3,6 @@ import uuid
 import logging
 from pathlib import Path
 from typing import Optional
-# 如果你不需要命令行解析，可注释以下两行：
 # from argparse import ArgumentParser
 
 # 第三方库

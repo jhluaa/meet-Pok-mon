@@ -27,7 +27,6 @@ class DetectFaceAndLip:
         )
         self.mouth_status_history = []  # 用于存储嘴唇状态的历史记录
         self.remark = "Not talking"
-
         # self._open = bool(self.get_config_value("update_open", "open"))
         self.face_count = 0  # 用于保存文件的计数
 
@@ -108,11 +107,7 @@ class DetectFaceAndLip:
                                   y_min_padded:y_max_padded, x_min_padded:x_max_padded
                                   ]
                 h, w = face_roi_padded.shape[:2]
-                # 检测人脸是否模糊
-                if not self.is_face_clear(face_roi_padded):
-                    if prev_mouth_status is not None:
-                        self.mouth_status_history.append(prev_mouth_status)
-                    continue
+
                 # 等比例缩放人脸区域到固定尺寸
                 scale_w = self.desired_size / w
                 scale_h = self.desired_size / h
@@ -154,18 +149,30 @@ class DetectFaceAndLip:
                         y_frame_coord = int(y_min_padded + y_padded)
 
                         face_points.append((x_frame_coord, y_frame_coord))
+                    if face_points:
+                        x_coords = [pt[0] for pt in face_points]
+                        y_coords = [pt[1] for pt in face_points]
 
-                    # 绘制浅蓝色mesh结构
-                    for connection in mp.solutions.face_mesh.FACEMESH_TESSELATION:
-                        pt1 = face_points[connection[0]]
-                        pt2 = face_points[connection[1]]
-                        cv2.line(frame, pt1, pt2, (255, 255, 0), 1)
+                        min_x = min(x_coords)
+                        max_x = max(x_coords)
+                        min_y = min(y_coords)
+                        max_y = max(y_coords)
 
-                    # 绘制嘴唇红色
-                    for connection in mp.solutions.face_mesh.FACEMESH_LIPS:
-                        pt1 = face_points[connection[0]]
-                        pt2 = face_points[connection[1]]
-                        cv2.line(frame, pt1, pt2, (0, 0, 255), 1)
+                        # 包含所有关键点的最大矩形框
+                        cv2.rectangle(
+                            frame, (min_x, min_y), (max_x, max_y), (0, 255, 0), 2  # 绿色框
+                        )
+                    # # 绘制浅蓝色mesh结构
+                    # for connection in mp.solutions.face_mesh.FACEMESH_TESSELATION:
+                    #     pt1 = face_points[connection[0]]
+                    #     pt2 = face_points[connection[1]]
+                    #     cv2.line(frame, pt1, pt2, (255, 255, 0), 1)
+                    #
+                    # # 绘制嘴唇红色
+                    # for connection in mp.solutions.face_mesh.FACEMESH_LIPS:
+                    #     pt1 = face_points[connection[0]]
+                    #     pt2 = face_points[connection[1]]
+                    #     cv2.line(frame, pt1, pt2, (0, 0, 255), 1)
 
                     cv2.putText(
                         frame,
@@ -180,7 +187,7 @@ class DetectFaceAndLip:
                     )
                 else:
                     self.d_normalized_history.clear()
-                    self.mouth_status_history.clear()
+
                     self.remark = "No Face Detected"
                     cv2.putText(
                         frame,
@@ -195,7 +202,7 @@ class DetectFaceAndLip:
                 # 没有检测到人脸时的处理
                 self.remark = "No Face Detected"
                 self.d_normalized_history.clear()
-                self.mouth_status_history.clear()
+
                 cv2.putText(
                     frame,
                     self.remark,
@@ -333,7 +340,7 @@ class DetectFaceAndLip:
                         # 如果人脸接近边缘，重置目标人脸边界框
                         target_face_bbox = None
                 else:
-                    pass
+                    target_face_bbox = None
             else:
                 # 如果未锁定目标人脸，选择面积最大的人脸
                 target_face_bbox = max(candidate_faces, key=lambda x: x[2] * x[3])
@@ -475,48 +482,34 @@ class DetectFaceAndLip:
                 # 如果历史记录不足，使用当前距离判断
                 # detected = distance_13 > self.lip_open_threshold
                 detected = False
-
-        # print(detected)
-        # 更新嘴巴状态历史记录
         self.mouth_status_history.append(detected)
+        if len(self.mouth_status_history) > 25:
+            self.mouth_status_history = self.mouth_status_history[-25:]
+        # 更新嘴巴状态历史记录
+        time.sleep(0.02)
         return detected
 
     def check_talking(self):
-        wait = 0.4  # 时间窗口（秒）
-        talking_threshold = 0
-        talking_frames_required = int(talking_threshold * self.fps)
-        talking_frames_count = 0  # 连续 talking 的帧数计数
+        wait = 0.01
+        window_size = 8
         while True:
+            time.sleep(wait)
             total_count = len(self.mouth_status_history)
+            if total_count >= window_size:
+                window = self.mouth_status_history[-window_size:]
+                # 连续出现( True , True )的次数
+                alternations = sum(
+                    1 for i in range(1, len(window))
+                    if window[i] and window[i - 1]
+                )
+                # 大于2代表检测到唇动
+                is_talking = (alternations > 2)
 
-            if total_count > wait * self.fps:
-                # 复制历史记录并清空
-                history = self.mouth_status_history.copy()
-                self.mouth_status_history.clear()
-
-                # print("history", len(history))
-
-                # 统计 history 中 True 的数量
-                talking_count = sum(history)
-                talking_ratio = talking_count / len(history)  # 计算 True 的比例
-
-                if talking_ratio > 0.5:
-                    is_talking = True
-                    self.remark = "Talking"
-                else:  # 否则表示未说话
-                    is_talking = False
-                    self.remark = "Not Talking"
-
-                # 根据 is_talking 状态更新事件和计数器
+                self.remark = "Lip Moving" if is_talking else "Lip Closed"
                 if is_talking:
-                    talking_frames_count += 1
-                    if talking_frames_count >= talking_frames_required:
-                        self.funasr_event.set()  # 触发事件
+                    self.funasr_event.set()  # 唇动 => set
                 else:
-                    talking_frames_count = 0
-                    self.funasr_event.clear()  # 清除事件
-
-            time.sleep(0.15)  # 窗口刷新频率
+                    self.funasr_event.clear()  # 未动 => clear
 
     @staticmethod
     def __is_face_near_edge(bbox, frame_width, frame_height, edge_threshold=0):
