@@ -103,12 +103,12 @@ def sanitize_graph(graph: nx.Graph) -> nx.Graph:
     return sanitized_graph
 
 # 生成图谱
-# graph_generator = GraphGenerator(
-#     er_extractor=EntityRelationshipExtractor.build_default(llm=llm),
-#     graphs_merger=GraphsMerger(),#每个文本块对应一个子图，所以要合并
-#     graph_sanitizer=sanitize_graph,
-#     er_description_summarizer=EntityRelationshipDescriptionSummarizer.build_default(llm=llm),
-# )
+graph_generator = GraphGenerator(
+    er_extractor=EntityRelationshipExtractor.build_default(llm=llm),
+    graphs_merger=GraphsMerger(),#每个文本块对应一个子图，所以要合并
+    graph_sanitizer=sanitize_graph,
+    er_description_summarizer=EntityRelationshipDescriptionSummarizer.build_default(llm=llm),
+)
 
 # merged_graph, summarized_graph = graph_generator.run(textunit_df)
 
