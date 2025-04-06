@@ -11,11 +11,63 @@ import pickle
 import torch
 from transformers import BertTokenizer
 from pydantic import BaseModel
+# 获取当前文件所在目录的父目录（即项目根目录）
+current_dir = Path(__file__).parent
+project_root = current_dir.parent.resolve()
+
+# 将项目根目录添加到Python路径
+sys.path.insert(0, str(project_root))
+from NER.ner_model import *
 
 # Neo4j 连接配置
 NEO4J_URI = "bolt://localhost:7687"
 NEO4J_AUTH = ("neo4j", "woshishamo630")  # 替换为实际认证信息
 g = Graph(NEO4J_URI, auth=NEO4J_AUTH)
+
+class EntityRecognition:
+    def __init__(self):
+        # 初始化规则和 TF-IDF 对齐
+        self.rule = rule_find()
+        self.tfidf_r = tfidf_alignment()
+        self.base_dir = r"F:\bigmodel\meet-Pok-mon\4.KGqa\Pokemon-KGQA"
+        self.model_base_path = "F:/bigmodel/models/"  # 模型和权重的基础路径
+        self.model_name = os.path.join(self.model_base_path, "chinese-roberta-wwm-ext")
+        self.pt_path = os.path.join(self.model_name, "best_roberta.pt")
+
+        # 加载 tag2idx
+        if os.path.exists(r'F:\bigmodel\meet-Pok-mon\4.KGqa\Pokemon-KGQA\NER\tag2idx.npy'):
+            with open(r'F:\bigmodel\meet-Pok-mon\4.KGqa\Pokemon-KGQA\NER\tag2idx.npy', 'rb') as f:
+                self.tag2idx = pickle.load(f)
+                self.idx2tag = list(self.tag2idx)
+        else:
+            raise FileNotFoundError("tag2idx文件不存在！")
+
+        # 初始化设备
+        self.device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+
+        # 加载 tokenizer
+        self.tokenizer = BertTokenizer.from_pretrained(self.model_name, cache_dir=self.model_base_path)
+
+        # 初始化模型
+        hidden_size = 128
+        bi = True
+        self.model = Bert_Model(self.model_name, hidden_size, len(self.tag2idx), bi)
+
+        # 加载模型权重
+        if os.path.exists(self.pt_path):
+            print("加载已有模型")
+            self.model.load_state_dict(torch.load(self.pt_path, map_location=self.device))
+        else:
+            raise FileNotFoundError("未找到模型权重文件!!")
+
+        # 将模型移动到设备
+        self.model = self.model.to(self.device)
+
+        print('模型初始化完成 ......')
+
+    def ner(self, question):
+        # 调用 NER 方法
+        return get_ner_result(self.model, self.tokenizer, question, self.rule, self.tfidf_r, self.device, self.idx2tag)
 
 class KGQueryAgent:
     """宝可梦知识图谱查询代理"""
@@ -26,12 +78,9 @@ class KGQueryAgent:
         :param llm: 可选的语言模型实例，默认使用ChatOpenAI
         """
         self.llm = llm or self._default_llm()
+        self.ner = EntityRecognition()
         self.tools = self._init_tools()
         self.agent = self._create_agent()
-        self.base_dir = r"F:\bigmodel\meet-Pok-mon\4.KGqa\Pokemon-KGQA"
-        self.model_base_path = "F:/bigmodel/models/"  # 模型和权重的基础路径
-        self.model_name = os.path.join(self.model_base_path, "chinese-roberta-wwm-ext")
-        self.pt_path = os.path.join(self.model_name, "best_roberta.pt")
         
     def _default_llm(self):
         """默认语言模型配置"""
@@ -288,7 +337,7 @@ class KGQueryAgent:
         @tool(args_schema=Entity)
         def get_entity(question: str):
             """你必须调用这个工具，且只调用一次，对于用户的输入进行实体匹配，且后续查询的参数需在返回的实体中选择"""
-            return EnR.ner(question)
+            return self.ner.ner(question)
 
 
         def execute_query(sql: str, result_key: str, not_found_msg: str):
